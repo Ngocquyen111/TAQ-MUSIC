@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class SettingsTab extends StatelessWidget {
+  const SettingsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,18 +12,17 @@ class ProfileScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircleAvatar(radius: 40),
-          const SizedBox(height: 16),
-          const Text('Email: abc@gmail.com'),
+          const Icon(Icons.settings, size: 80),
           const SizedBox(height: 24),
 
           SizedBox(
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
                 final prefs = await SharedPreferences.getInstance();
-                await prefs.clear();
+                await prefs.setBool('logged_in', false);
 
                 Navigator.pushAndRemoveUntil(
                   context,
@@ -31,7 +30,7 @@ class ProfileScreen extends StatelessWidget {
                       (route) => false,
                 );
               },
-              child: const Text('LOGOUT'),
+              child: const Text('ĐĂNG XUẤT'),
             ),
           ),
         ],

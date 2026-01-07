@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-
-import 'home_screen.dart';
-import 'library_screen.dart';
-import 'profile_screen.dart';
+import 'home_tab.dart';
+import 'search_tab.dart';
+import 'settings_tab.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,42 +11,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0;
+  int _index = 0;
 
-  final List<Widget> _pages = const [
-    HomeScreen(),
-    LibraryScreen(),
-    ProfileScreen(),
+  final _pages = const [
+    HomeTab(),
+    SearchTab(),
+    SettingsTab(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Music App'),
-        centerTitle: true,
-      ),
-      body: _pages[_currentIndex],
+      body: _pages[_index],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+        currentIndex: _index,
+        onTap: (value) {
+          setState(() => _index = value);
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Trang chủ',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.library_music),
-            label: 'Thư viện',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Cá nhân',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Tìm kiếm'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Cài đặt'),
         ],
       ),
     );
