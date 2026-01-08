@@ -1,39 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../auth/login_screen.dart';
+import '../../user_store.dart';
+import 'edit_profile_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Widget info(String label, String value) {
+    return ListTile(
+      title: Text(label),
+      subtitle: Text(value),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Trang cá nhân"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              // 👇 CHỜ KẾT QUẢ TỪ MÀN CHỈNH SỬA
+              final updated = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const EditProfileScreen(),
+                ),
+              );
+
+              // 👇 NẾU CÓ CẬP NHẬT → REFRESH UI
+              if (updated == true) {
+                setState(() {});
+              }
+            },
+          )
+        ],
+      ),
+      body: ListView(
         children: [
-          const CircleAvatar(radius: 40),
-          const SizedBox(height: 16),
-          const Text('Email: abc@gmail.com'),
-          const SizedBox(height: 24),
-
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.clear();
-
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      (route) => false,
-                );
-              },
-              child: const Text('LOGOUT'),
+          const SizedBox(height: 30),
+          Center(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.green,
+              child: const Icon(Icons.person, size: 60, color: Colors.white),
             ),
           ),
+          const SizedBox(height: 20),
+          Center(
+            child: Text(
+              UserStore.name,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          info("Email", UserStore.email),
+          info("Số điện thoại", UserStore.phone),
+          info("Ngày sinh", UserStore.birthday),
+          info("Mật khẩu", "******"),
         ],
       ),
     );

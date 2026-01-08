@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class SearchScreen extends StatelessWidget {
+  const SearchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
+      appBar: AppBar(title: const Text("Tìm kiếm")),
       body: const Center(
         child: Text(
-          "Trang Home",
+          "Trang tìm kiếm",
           style: TextStyle(fontSize: 18),
         ),
       ),

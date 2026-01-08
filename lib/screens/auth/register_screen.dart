@@ -1,71 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../user_store.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final emailController = TextEditingController();
-    final nameController = TextEditingController();
-    final passwordController = TextEditingController();
-    final confirmController = TextEditingController();
+    final nameCtrl = TextEditingController();
+    final emailCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    final passCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    final birthdayCtrl = TextEditingController();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng ký')),
+      appBar: AppBar(title: const Text("Đăng ký")),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email / Số điện thoại'),
-              ),
-              const SizedBox(height: 16),
+              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Họ tên")),
+              TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: "Email (@gmail.com)")),
+              TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: "Số điện thoại")),
+              TextField(controller: birthdayCtrl, decoration: const InputDecoration(labelText: "Ngày sinh")),
+              TextField(controller: passCtrl, obscureText: true, decoration: const InputDecoration(labelText: "Mật khẩu")),
+              TextField(controller: confirmCtrl, obscureText: true, decoration: const InputDecoration(labelText: "Xác nhận mật khẩu")),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (nameCtrl.text.isEmpty ||
+                      phoneCtrl.text.isEmpty ||
+                      birthdayCtrl.text.isEmpty ||
+                      !emailCtrl.text.endsWith("@gmail.com") ||
+                      passCtrl.text != confirmCtrl.text) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Thông tin không hợp lệ")),
+                    );
+                    return;
+                  }
 
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Họ tên'),
-              ),
-              const SizedBox(height: 16),
+                  UserStore.name = nameCtrl.text;
+                  UserStore.email = emailCtrl.text;
+                  UserStore.phone = phoneCtrl.text;
+                  UserStore.birthday = birthdayCtrl.text;
+                  UserStore.password = passCtrl.text;
+                  UserStore.hasRegistered = true;
 
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Mật khẩu'),
-              ),
-              const SizedBox(height: 16),
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Đăng ký thành công")),
+                  );
 
-              TextField(
-                controller: confirmController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Xác nhận mật khẩu'),
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (passwordController.text != confirmController.text) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Mật khẩu không khớp')),
-                      );
-                      return;
-                    }
-
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setString('email', emailController.text);
-                    await prefs.setString('name', nameController.text);
-                    await prefs.setString('password', passwordController.text);
-
-                    Navigator.pop(context);
-                  },
-                  child: const Text('ĐĂNG KÝ'),
-                ),
-              ),
+                  Navigator.pop(context);
+                },
+                child: const Text("Đăng ký"),
+              )
             ],
           ),
         ),
