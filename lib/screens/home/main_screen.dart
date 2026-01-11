@@ -24,12 +24,15 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: pages[index],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.black,
         currentIndex: index,
         onTap: (i) => setState(() => index = i),
+        selectedItemColor: Colors.pink,
+        unselectedItemColor: Colors.white54,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Tìm kiếm"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Cài đặt"),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: ""),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ""),
         ],
       ),
     );

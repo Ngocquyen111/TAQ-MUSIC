@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/auth/login_screen.dart';
+import 'theme/app_colors.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,9 +11,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      theme: ThemeData(
+        scaffoldBackgroundColor: AppColors.bg,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.bg,
+          elevation: 0,
+          foregroundColor: Colors.white,
+        ),
+      ),
+      home: const LoginScreen(),
     );
   }
 }
