@@ -1,9 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+
 import '../../theme/app_colors.dart';
 import '../../services/music_service.dart';
 import '../../data/music_data.dart';
 import '../../models/song.dart';
-import 'package:audioplayers/audioplayers.dart';
+
+/// ================= GLOBAL MUSIC STORE =================
+/// Các screen khác chỉ cần import file này là dùng được
+class MusicStore {
+  static final List<Song> recentSongs = [];
+  static final List<Song> favoriteSongs = [];
+  static final List<Song> downloadedSongs = [];
+
+  static void addRecent(Song song) {
+    recentSongs.removeWhere((s) => s.filePath == song.filePath);
+    recentSongs.insert(0, song);
+  }
+
+  static void addFavorite(Song song) {
+    if (!favoriteSongs.any((s) => s.filePath == song.filePath)) {
+      favoriteSongs.add(song);
+    }
+  }
+
+  static void addDownload(Song song) {
+    if (!downloadedSongs.any((s) => s.filePath == song.filePath)) {
+      downloadedSongs.add(song);
+    }
+  }
+}
 
 class ArtistDetailScreen extends StatefulWidget {
   final String artistName;
@@ -21,6 +47,7 @@ class ArtistDetailScreen extends StatefulWidget {
 
 class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
   final MusicService _musicService = MusicService();
+
   String? _currentPlayingSong;
   bool _isPlaying = false;
   List<Song> _songs = [];
@@ -28,14 +55,14 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
   @override
   void initState() {
     super.initState();
+
     _songs = MusicData.getSongsByArtist(widget.artistName);
 
     _musicService.onPlayerStateChanged.listen((state) {
-      if (mounted) {
-        setState(() {
-          _isPlaying = state == PlayerState.playing;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _isPlaying = state == PlayerState.playing;
+      });
     });
   }
 
@@ -45,123 +72,99 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
       backgroundColor: const Color(0xFF121212),
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            backgroundColor: AppColors.card,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                widget.artistName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.pinkAccent.withOpacity(0.3),
-                          AppColors.card,
-                        ],
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.person,
-                        size: 120,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _actionButton(
-                    Icons.shuffle,
-                    "Phát ngẫu nhiên",
-                    onTap: () => _playRandomSong(),
-                  ),
-                  _actionButton(Icons.favorite_border, "Yêu thích"),
-                  _actionButton(Icons.share, "Chia sẻ"),
-                ],
-              ),
-            ),
-          ),
-
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: Text(
-                "Bài hát",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                if (index >= _songs.length) return null;
-
-                final song = _songs[index];
-                final isCurrentSong = _currentPlayingSong == song.filePath;
-
-                return _songItem(
-                  title: song.title,
-                  artist: song.artist,
-                  duration: song.duration,
-                  index: index,
-                  songPath: song.filePath,
-                  isPlaying: isCurrentSong && _isPlaying,
-                  isCurrentSong: isCurrentSong,
-                );
-              },
-              childCount: _songs.length,
-            ),
-          ),
+          _buildAppBar(),
+          _buildActionButtons(),
+          _buildSongTitle(),
+          _buildSongList(),
         ],
       ),
-      bottomNavigationBar: _currentPlayingSong != null
-          ? _buildMiniPlayer()
-          : null,
+      bottomNavigationBar:
+      _currentPlayingSong != null ? _buildMiniPlayer() : null,
     );
   }
 
-  Widget _actionButton(IconData icon, String label, {VoidCallback? onTap}) {
+  // ================= APP BAR =================
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 300,
+      pinned: true,
+      backgroundColor: AppColors.card,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+      flexibleSpace: FlexibleSpaceBar(
+        title: Text(
+          widget.artistName,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.pinkAccent.withOpacity(0.3),
+                    AppColors.card,
+                  ],
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.person,
+                  size: 120,
+                  color: Colors.white54,
+                ),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.7),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ================= ACTION BUTTON =================
+  Widget _buildActionButtons() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _actionButton(
+              Icons.shuffle,
+              "Phát ngẫu nhiên",
+              onTap: _playRandomSong,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionButton(
+      IconData icon,
+      String label, {
+        VoidCallback? onTap,
+      }) {
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -172,54 +175,84 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
               color: AppColors.card,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: Colors.white, size: 24),
+            child: Icon(icon, color: Colors.white),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
       ),
     );
   }
 
+  // ================= SONG TITLE =================
+  Widget _buildSongTitle() {
+    return const SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: Text(
+          "Bài hát",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ================= SONG LIST =================
+  Widget _buildSongList() {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+            (context, index) {
+          final song = _songs[index];
+          final isCurrentSong = _currentPlayingSong == song.filePath;
+
+          return _songItem(
+            song: song,
+            index: index,
+            isPlaying: isCurrentSong && _isPlaying,
+            isCurrentSong: isCurrentSong,
+          );
+        },
+        childCount: _songs.length,
+      ),
+    );
+  }
+
   Widget _songItem({
-    required String title,
-    required String artist,
-    required String duration,
+    required Song song,
     required int index,
-    required String songPath,
     required bool isPlaying,
     required bool isCurrentSong,
   }) {
     return InkWell(
-      onTap: () => _playSong(songPath, title),
+      onTap: () => _playSong(song.filePath),
       child: Container(
-        color: isCurrentSong ? AppColors.card.withOpacity(0.3) : Colors.transparent,
+        color:
+        isCurrentSong ? AppColors.card.withOpacity(0.3) : Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            // Số thứ tự hoặc icon đang phát
             SizedBox(
               width: 30,
               child: isPlaying
-                  ? const Icon(Icons.volume_up, color: Colors.pinkAccent, size: 20)
+                  ? const Icon(Icons.volume_up,
+                  color: Colors.pinkAccent, size: 20)
                   : Text(
                 "${index + 1}",
                 style: TextStyle(
-                  color: isCurrentSong ? Colors.pinkAccent : Colors.white70,
-                  fontSize: 14,
-                  fontWeight: isCurrentSong ? FontWeight.bold : FontWeight.normal,
+                  color: isCurrentSong
+                      ? Colors.pinkAccent
+                      : Colors.white70,
                 ),
               ),
             ),
             const SizedBox(width: 12),
-
-            // Album art
             Container(
               width: 50,
               height: 50,
@@ -228,64 +261,50 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
-                isPlaying ? Icons.music_note : Icons.music_note,
-                color: isPlaying ? Colors.pinkAccent : Colors.white54,
+                Icons.music_note,
+                color: isPlaying
+                    ? Colors.pinkAccent
+                    : Colors.white.withOpacity(.6),
               ),
             ),
             const SizedBox(width: 12),
-
-            // Song info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    song.title,
                     style: TextStyle(
-                      color: isCurrentSong ? Colors.pinkAccent : Colors.white,
-                      fontSize: 15,
-                      fontWeight: isCurrentSong ? FontWeight.w600 : FontWeight.w500,
+                      color:
+                      isCurrentSong ? Colors.pinkAccent : Colors.white,
+                      fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
                   Text(
-                    artist,
+                    song.artist,
                     style: const TextStyle(
-                      color: Colors.white60,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                        color: Colors.white60, fontSize: 13),
                   ),
                 ],
               ),
             ),
-
-            // Play/Pause button
             IconButton(
               icon: Icon(
-                isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                color: isCurrentSong ? Colors.pinkAccent : Colors.white60,
+                isPlaying
+                    ? Icons.pause_circle_filled
+                    : Icons.play_circle_filled,
+                color: Colors.pinkAccent,
                 size: 32,
               ),
-              onPressed: () => _playSong(songPath, title),
+              onPressed: () => _playSong(song.filePath),
             ),
-
-            // Duration
-            Text(
-              duration,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 13,
-              ),
-            ),
-
-            // More button
+            Text(song.duration,
+                style: const TextStyle(color: Colors.white60)),
             IconButton(
               icon: const Icon(Icons.more_vert, color: Colors.white60),
-              onPressed: () => _showSongOptions(title),
+              onPressed: () => _showSongOptions(song),
             ),
           ],
         ),
@@ -293,46 +312,22 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
     );
   }
 
+  // ================= MINI PLAYER =================
   Widget _buildMiniPlayer() {
     return Container(
       height: 70,
       color: AppColors.card,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.pinkAccent.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.music_note, color: Colors.pinkAccent),
-          ),
+          const Icon(Icons.music_note, color: Colors.pinkAccent),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _getCurrentSongTitle(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  widget.artistName,
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            child: Text(
+              _getCurrentSongTitle(),
+              style: const TextStyle(color: Colors.white),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           IconButton(
@@ -341,26 +336,27 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
               color: Colors.white,
               size: 32,
             ),
-            onPressed: () => _togglePlayPause(),
+            onPressed: _togglePlayPause,
           ),
         ],
       ),
     );
   }
 
-  // ===== MUSIC CONTROL METHODS =====
-  void _playSong(String songPath, String title) {
-    setState(() {
-      _currentPlayingSong = songPath;
-    });
-    _musicService.play(songPath);
+  // ================= MUSIC CONTROL =================
+  void _playSong(String path) {
+    final song = _songs.firstWhere((s) => s.filePath == path);
+
+    MusicStore.addRecent(song);
+
+    setState(() => _currentPlayingSong = path);
+    _musicService.play(path);
   }
 
   void _playRandomSong() {
     if (_songs.isEmpty) return;
-    final randomIndex = DateTime.now().millisecond % _songs.length;
-    final song = _songs[randomIndex];
-    _playSong(song.filePath, song.title);
+    final song = _songs[DateTime.now().millisecond % _songs.length];
+    _playSong(song.filePath);
   }
 
   void _togglePlayPause() {
@@ -371,32 +367,38 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
     }
   }
 
-  void _showSongOptions(String title) {
+  // ================= BOTTOM SHEET =================
+  void _showSongOptions(Song song) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Padding(
+      builder: (_) => Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.playlist_add, color: Colors.white),
-              title: const Text("Thêm vào playlist", style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pop(context),
+              leading:
+              const Icon(Icons.favorite, color: Colors.pinkAccent),
+              title: const Text("Yêu thích",
+                  style: TextStyle(color: Colors.white)),
+              onTap: () {
+                MusicStore.addFavorite(song);
+                Navigator.pop(context);
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.share, color: Colors.white),
-              title: const Text("Chia sẻ", style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.download, color: Colors.white),
-              title: const Text("Tải xuống", style: TextStyle(color: Colors.white)),
-              onTap: () => Navigator.pop(context),
+              leading:
+              const Icon(Icons.download, color: Colors.green),
+              title: const Text("Tải xuống",
+                  style: TextStyle(color: Colors.white)),
+              onTap: () {
+                MusicStore.addDownload(song);
+                Navigator.pop(context);
+              },
             ),
           ],
         ),
@@ -404,19 +406,14 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
     );
   }
 
-  // ===== HELPER METHODS =====
+  // ================= HELPER =================
   String _getCurrentSongTitle() {
-    if (_currentPlayingSong == null) return "";
     try {
-      final song = _songs.firstWhere((s) => s.filePath == _currentPlayingSong);
-      return song.title;
-    } catch (e) {
+      return _songs
+          .firstWhere((s) => s.filePath == _currentPlayingSong)
+          .title;
+    } catch (_) {
       return "Đang phát...";
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

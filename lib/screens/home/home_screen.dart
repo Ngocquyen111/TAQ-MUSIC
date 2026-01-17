@@ -80,8 +80,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 12),
               _chip("Tất cả", active: true),
-              const SizedBox(width: 8),
-              _chip("Nhạc đã tải"),
             ],
           ),
           const SizedBox(height: 20),

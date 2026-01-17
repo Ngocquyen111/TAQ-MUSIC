@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../models/song.dart';
-
-/// ===== STORE TẠM (DÙNG CHUNG) =====
-class LocalMusicStore {
-  static final List<Song> favoriteSongs = [];
-}
+import '../home/artist_detail_screen.dart';
 
 class FavoriteScreen extends StatelessWidget {
   const FavoriteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final songs = LocalMusicStore.favoriteSongs;
+    final songs = MusicStore.favoriteSongs;
 
     return Scaffold(
       backgroundColor: const Color(0xFF4A0000),
@@ -36,47 +32,52 @@ class FavoriteScreen extends StatelessWidget {
         itemCount: songs.length,
         itemBuilder: (context, index) {
           final song = songs[index];
-          return _songItem(song.title, song.artist);
+          return _songItem(context, song);
         },
       ),
     );
   }
 
-  // ===== ITEM =====
-  Widget _songItem(String title, String artist) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.music_note, color: Colors.white),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                  ),
-                ),
-                Text(
-                  artist,
-                  style: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+  Widget _songItem(BuildContext context, Song song) {
+    return InkWell(
+      onTap: () {
+        MusicStore.addRecent(song);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ArtistDetailScreen(
+              artistName: song.artist,
+              artistImage: "assets/images/artist_placeholder.png",
             ),
           ),
-          const Icon(Icons.favorite, color: Colors.pink),
-        ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 22,
+              backgroundColor: Colors.white24,
+              child: Icon(Icons.favorite, color: Colors.pink),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(song.title,
+                      style:
+                      const TextStyle(color: Colors.white, fontSize: 15)),
+                  Text(song.artist,
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 13)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
