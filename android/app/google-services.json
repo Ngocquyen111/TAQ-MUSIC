@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "27327170843",
+    "project_id": "taq-music-ab523",
+    "storage_bucket": "taq-music-ab523.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:27327170843:android:ff0ea81f1527adf4976bbe",
+        "android_client_info": {
+          "package_name": "com.example.music_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "27327170843-18i8b6dvp5s4a9js3bbdhuqspp2k8e3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.music_app",
+            "certificate_hash": "8e1d9ffc8a50e98c6b7f7b2d2a16dcb7cf0b7b08"
+          }
+        },
+        {
+          "client_id": "27327170843-9r52v493e61efh8bpnoufu2fp6fu0fub.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiqorVONH7X-dq7OM37T6YJN8gPahVr2A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "27327170843-9r52v493e61efh8bpnoufu2fp6fu0fub.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

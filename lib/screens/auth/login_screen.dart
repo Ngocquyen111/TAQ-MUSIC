@@ -3,6 +3,7 @@ import '../../user_store.dart';
 import '../home/main_screen.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
+import '../../core/firebase_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +16,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final usernameCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   bool hidePassword = true;
+
+  final FirebaseService _firebaseService = FirebaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -41,21 +44,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 40),
 
-              // ===== USERNAME =====
-              const Text(
-                "Tên đăng nhập:",
-                style: TextStyle(color: Colors.white),
-              ),
+              const Text("Tên đăng nhập:", style: TextStyle(color: Colors.white)),
               const SizedBox(height: 6),
               _input(usernameCtrl),
 
               const SizedBox(height: 20),
 
-              // ===== PASSWORD =====
-              const Text(
-                "Password:",
-                style: TextStyle(color: Colors.white),
-              ),
+              const Text("Password:", style: TextStyle(color: Colors.white)),
               const SizedBox(height: 6),
               _passwordInput(),
 
@@ -108,12 +103,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 16),
 
+              // ===== GOOGLE LOGIN =====
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.facebook, color: Colors.white),
-                  SizedBox(width: 20),
-                  Icon(Icons.email, color: Colors.white),
+                children: [
+                  GestureDetector(
+                    onTap: _loginWithGoogle,
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      child: const Icon(
+                        Icons.g_mobiledata,
+                        color: Colors.black,
+                        size: 36,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -123,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ===== INPUT USERNAME =====
   Widget _input(TextEditingController ctrl) {
     return TextField(
       controller: ctrl,
@@ -141,7 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ===== INPUT PASSWORD =====
   Widget _passwordInput() {
     return TextField(
       controller: passCtrl,
@@ -168,7 +174,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ===== BUTTON =====
   Widget _actionButton(String text, VoidCallback onTap) {
     return SizedBox(
       width: 110,
@@ -187,7 +192,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ===== LOGIN LOGIC =====
   void _login() {
     if (!UserStore.hasRegistered) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -206,6 +210,21 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Sai tên đăng nhập hoặc mật khẩu")),
+      );
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    final user = await _firebaseService.signInWithGoogle();
+
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Đăng nhập Google thất bại")),
       );
     }
   }
