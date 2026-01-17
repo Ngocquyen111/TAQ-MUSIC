@@ -11,14 +11,23 @@ import '../library/download_screen.dart';
 // notification
 import '../notification/notification_screen.dart';
 
+// firebase
+import '../../core/firebase_service.dart';
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF4A0000), // nền đỏ sẫm giống login
       appBar: AppBar(
-        title: const Text("Cài đặt"),
+        title: const Text(
+          "Cài đặt",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF4A0000),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView(
         children: [
@@ -52,12 +61,21 @@ class SettingsScreen extends StatelessWidget {
             "Thông báo",
                 () => _go(context, const NotificationScreen()),
           ),
+
+          const Divider(color: Colors.white30),
+
+          // ===== LOGOUT =====
           _item(
             context,
             Icons.logout,
             "Đăng xuất",
-                () {
+                () async {
+              final firebaseService = FirebaseService();
+
+              await firebaseService.signOut(); // 🔥 QUAN TRỌNG
+
               UserStore.isLoggedIn = false;
+
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -85,8 +103,19 @@ class SettingsScreen extends StatelessWidget {
       VoidCallback onTap,
       ) {
     return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
+      leading: Icon(icon, color: Colors.white),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white70,
+        size: 16,
+      ),
       onTap: onTap,
     );
   }

@@ -1,10 +1,11 @@
 import 'package:audioplayers/audioplayers.dart';
 
 class MusicService {
+  /// SINGLETON
   static final MusicService _instance = MusicService._internal();
   factory MusicService() => _instance;
   MusicService._internal() {
-    _initAudioPlayer();
+    _listenPlayerState();
   }
 
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -12,77 +13,77 @@ class MusicService {
   String? _currentSongPath;
   bool _isPlaying = false;
 
-  void _initAudioPlayer() {
-    _audioPlayer.setPlayerMode(PlayerMode.mediaPlayer);
-
-    _audioPlayer.setReleaseMode(ReleaseMode.stop);
-
-    _audioPlayer.setVolume(0.7);
-  }
-
+  /// GETTERS
   AudioPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _isPlaying;
   String? get currentSongPath => _currentSongPath;
 
-  // Phát nhạc
+  /// ===============================
+  /// PLAY SONG
+  /// ===============================
   Future<void> play(String songPath) async {
     try {
-      print('🎵 Trying to play: $songPath');
-
+      // Nếu đang phát đúng bài → pause
       if (_currentSongPath == songPath && _isPlaying) {
-        print('⏸️ Pausing current song');
         await pause();
         return;
       }
 
+      // Nếu đổi bài khác
       if (_currentSongPath != songPath) {
-        print('🎶 Playing new song: $songPath');
         await _audioPlayer.stop();
         _currentSongPath = songPath;
 
-        await _audioPlayer.play(
-          AssetSource(songPath),
-          mode: PlayerMode.mediaPlayer,
-        );
-        print('✅ Started playing');
+        if (songPath.startsWith('http')) {
+          // STREAM / URL
+          await _audioPlayer.play(UrlSource(songPath));
+        } else {
+          // ASSET LOCAL
+          await _audioPlayer.play(AssetSource(songPath));
+        }
       } else {
-        print('▶️ Resuming');
+        // Resume bài cũ
         await _audioPlayer.resume();
       }
-
-      _isPlaying = true;
     } catch (e) {
-      print('❌ Error playing song: $e');
       _isPlaying = false;
+      print('Play error: $e');
     }
   }
 
+  /// ===============================
+  /// PAUSE
+  /// ===============================
   Future<void> pause() async {
     await _audioPlayer.pause();
-    _isPlaying = false;
-    print('⏸️ Paused');
   }
 
+  /// ===============================
+  /// STOP
+  /// ===============================
   Future<void> stop() async {
     await _audioPlayer.stop();
-    _isPlaying = false;
     _currentSongPath = null;
-    print('⏹️ Stopped');
   }
 
-  Future<void> seek(Duration position) async {
-    await _audioPlayer.seek(position);
+  /// ===============================
+  /// LISTEN PLAYER STATE
+  /// ===============================
+  void _listenPlayerState() {
+    _audioPlayer.onPlayerStateChanged.listen((state) {
+      _isPlaying = state == PlayerState.playing;
+    });
   }
 
-  Future<void> setVolume(double volume) async {
-    await _audioPlayer.setVolume(volume);
-  }
+  /// ===============================
+  /// STREAMS (CHO MINI PLAYER)
+  /// ===============================
+  Stream<Duration> get onPositionChanged =>
+      _audioPlayer.onPositionChanged;
 
-  Stream<Duration> get onPositionChanged => _audioPlayer.onPositionChanged;
-  Stream<Duration?> get onDurationChanged => _audioPlayer.onDurationChanged;
-  Stream<PlayerState> get onPlayerStateChanged => _audioPlayer.onPlayerStateChanged;
+  Stream<Duration?> get onDurationChanged =>
+      _audioPlayer.onDurationChanged;
 
-  Future<void> dispose() async {
-    await _audioPlayer.dispose();
-  }
+  Stream<PlayerState> get onPlayerStateChanged =>
+      _audioPlayer.onPlayerStateChanged;
 }

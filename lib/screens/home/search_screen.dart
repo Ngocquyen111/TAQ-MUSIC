@@ -1,8 +1,39 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
+import '../../data/music_data.dart';
+import '../../models/song.dart';
+import '../../widgets/search_song_item.dart';
 
-class SearchScreen extends StatelessWidget {
-  const SearchScreen({super.key});
+class SearchScreen extends StatefulWidget {
+  final ValueChanged<Song> onSongSelected; // ✅ THÊM
+
+  const SearchScreen({
+    super.key,
+    required this.onSongSelected,
+  });
+
+  @override
+  State<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
+  final TextEditingController _searchCtrl = TextEditingController();
+  List<Song> _results = [];
+
+  void _onSearch(String keyword) {
+    keyword = keyword.toLowerCase();
+
+    final songs = MusicData.artists
+        .expand((artist) => artist.songs)
+        .where((song) =>
+    song.title.toLowerCase().contains(keyword) ||
+        song.artist.toLowerCase().contains(keyword))
+        .toList();
+
+    setState(() {
+      _results = songs;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +55,8 @@ class SearchScreen extends StatelessWidget {
 
             // ===== SEARCH BAR =====
             TextField(
+              controller: _searchCtrl,
+              onChanged: _onSearch,
               decoration: InputDecoration(
                 hintText: "Bạn muốn nghe gì",
                 filled: true,
@@ -35,6 +68,22 @@ class SearchScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            const SizedBox(height: 16),
+
+            // ===== SEARCH RESULT =====
+            if (_results.isNotEmpty)
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _results.length,
+                itemBuilder: (_, index) {
+                  return SearchSongItem(
+                    song: _results[index],
+                    onTap: widget.onSongSelected, // ✅ QUAN TRỌNG
+                  );
+                },
+              ),
 
             const SizedBox(height: 24),
 
