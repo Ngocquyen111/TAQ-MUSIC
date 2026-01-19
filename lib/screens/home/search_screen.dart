@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../data/music_data.dart';
 import '../../models/song.dart';
-import '../../widgets/search_song_item.dart';
+import '../../services/music_service.dart';
 
 class SearchScreen extends StatefulWidget {
-  final ValueChanged<Song> onSongSelected; // ✅ THÊM
+  final ValueChanged<Song> onSongSelected;
 
   const SearchScreen({
     super.key,
@@ -18,21 +18,47 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
+  final MusicService _musicService = MusicService();
   List<Song> _results = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _musicService.onPlayerStateChanged.listen((_) {
+      if (mounted) setState(() {});
+    });
+  }
 
   void _onSearch(String keyword) {
     keyword = keyword.toLowerCase();
-
     final songs = MusicData.artists
         .expand((artist) => artist.songs)
         .where((song) =>
     song.title.toLowerCase().contains(keyword) ||
         song.artist.toLowerCase().contains(keyword))
         .toList();
-
     setState(() {
       _results = songs;
     });
+  }
+
+  bool _isCurrentlyPlaying(String filePath) {
+    return _musicService.currentSongPath == filePath &&
+        _musicService.isPlaying;
+  }
+
+  // ✅ THÊM HÀM NÀY
+  void _handleSongTap(Song song) async {
+    if (_musicService.currentSongPath == song.filePath) {
+      if (_musicService.isPlaying) {
+        await _musicService.pause();
+      } else {
+        await _musicService.resume();
+      }
+      setState(() {});
+    } else {
+      widget.onSongSelected(song);
+    }
   }
 
   @override
@@ -50,10 +76,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // ===== SEARCH BAR =====
             TextField(
               controller: _searchCtrl,
               onChanged: _onSearch,
@@ -68,23 +92,19 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
 
-            // ===== SEARCH RESULT =====
             if (_results.isNotEmpty)
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _results.length,
                 itemBuilder: (_, index) {
-                  return SearchSongItem(
-                    song: _results[index],
-                    onTap: widget.onSongSelected, // ✅ QUAN TRỌNG
-                  );
+                  final song = _results[index];
+                  final isPlaying = _isCurrentlyPlaying(song.filePath);
+                  return _buildSongItem(song, isPlaying);
                 },
               ),
-
             const SizedBox(height: 24),
 
             const Text(
@@ -95,9 +115,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-
             const SizedBox(height: 12),
-
             SizedBox(
               height: 160,
               child: ListView(
@@ -109,7 +127,6 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
 
             const Text(
@@ -120,9 +137,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 12),
-
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
@@ -136,6 +151,60 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSongItem(Song song, bool isPlaying) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        leading: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: isPlaying
+                ? Colors.pinkAccent.withOpacity(0.3)
+                : Colors.grey[800],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            isPlaying ? Icons.pause : Icons.music_note,
+            color: Colors.white,
+          ),
+        ),
+        title: Text(
+          song.title,
+          style: TextStyle(
+            color: isPlaying ? Colors.pinkAccent : Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          song.artist,
+          style: TextStyle(
+            color: Colors.grey[400],
+            fontSize: 14,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: Icon(
+          isPlaying ? Icons.pause_circle_filled : Icons.play_circle_outline,
+          color: isPlaying ? Colors.pinkAccent : Colors.white,
+          size: 32,
+        ),
+        onTap: () => _handleSongTap(song), // ✅ GỌI HÀM XỬ LÝ
+        tileColor: isPlaying
+            ? Colors.pinkAccent.withOpacity(0.1)
+            : Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
@@ -159,6 +228,7 @@ class _SearchScreenState extends State<SearchScreen> {
 class _BrowseCard extends StatelessWidget {
   final String title;
   final Color color;
+
   const _BrowseCard(this.title, this.color);
 
   @override

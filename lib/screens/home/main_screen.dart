@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/song.dart';
+import '../../services/music_service.dart';
 import '../../widgets/mini_player_bar.dart';
 import 'search_screen.dart';
 import 'home_screen.dart';
@@ -15,15 +16,35 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int index = 0;
   Song? currentSong;
+  final MusicService _musicService = MusicService();
+
+  @override
+  void initState() {
+    super.initState();
+    _musicService.onPlayerStateChanged.listen((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  // ✅ ĐƠN GIẢN HÓA - pause/resume xử lý trong MusicService.play()
+  void _playSong(Song song) async {
+    await _musicService.play(song.filePath);
+    setState(() {
+      currentSong = song;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final pages = [
       const HomeScreen(),
       SearchScreen(
-        onSongSelected: (song) {
-          setState(() => currentSong = song); // ✅ KÍCH HOẠT MINI PLAYER
-        },
+        onSongSelected: _playSong,
       ),
       const SettingsScreen(),
     ];
