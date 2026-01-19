@@ -3,6 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../services/music_service.dart';
 import '../../models/song.dart';
 import 'artist_detail_screen.dart';
+import 'profile_screen.dart'; // 🔽 ADDED
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final MusicService _musicService = MusicService();
 
-  // Danh sách bài hát mẫu
   final List<Song> _songs = [
     Song(
       title: "Cause I Love You",
@@ -43,15 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _musicService.onPlayerStateChanged.listen((state) {
       if (mounted) {
-        setState(() {
-        });
+        setState(() {});
       }
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   void _playSong(Song song) async {
@@ -62,7 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   bool _isCurrentlyPlaying(String filePath) {
-    return _musicService.currentSongPath == filePath && _musicService.isPlaying;
+    return _musicService.currentSongPath == filePath &&
+        _musicService.isPlaying;
   }
 
   @override
@@ -73,15 +68,30 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
-              const CircleAvatar(
-                radius: 18,
-                backgroundColor: Colors.orange,
-                child: Icon(Icons.music_note, color: Colors.white),
+              // 🔽 ADDED: bọc CircleAvatar để click vào Profile
+              InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ProfileScreen(),
+                    ),
+                  );
+                },
+                child: const CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Colors.orange,
+                  child: Icon(Icons.music_note, color: Colors.white),
+                ),
               ),
+              // 🔼 END ADDED
+
               const SizedBox(width: 12),
               _chip("Tất cả", active: true),
             ],
           ),
+
           const SizedBox(height: 20),
 
           const Text(
@@ -92,7 +102,9 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 12),
+
           GridView.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
@@ -108,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return _miniItem(song);
             },
           ),
+
           const SizedBox(height: 24),
 
           GestureDetector(
@@ -135,7 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         color: Colors.pinkAccent.withOpacity(0.2),
                         borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(24)),
+                          top: Radius.circular(24),
+                        ),
                       ),
                       child: const Center(
                         child: Icon(
@@ -161,6 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+
           const SizedBox(height: 24),
 
           const Text(
@@ -171,6 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 12),
 
           ListView.builder(
@@ -193,10 +209,14 @@ class _HomeScreenState extends State<HomeScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 12),
+
           _artistItem(context, "Noo Phước Thịnh", "assets/artist.jpg", _songs[0]),
-          _artistItem(context, "Hà Anh Tuấn", "assets/artist.jpg", _songs.length > 1 ? _songs[1] : _songs[0]),
-          _artistItem(context, "Hồng Nhan J97", "assets/artist.jpg", _songs.length > 2 ? _songs[2] : _songs[0]),
+          _artistItem(context, "Hà Anh Tuấn", "assets/artist.jpg",
+              _songs.length > 1 ? _songs[1] : _songs[0]),
+          _artistItem(context, "Hồng Nhan J97", "assets/artist.jpg",
+              _songs.length > 2 ? _songs[2] : _songs[0]),
         ],
       ),
     );
@@ -225,7 +245,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isPlaying ? Colors.pinkAccent.withOpacity(0.2) : AppColors.card,
+          color:
+          isPlaying ? Colors.pinkAccent.withOpacity(0.2) : AppColors.card,
           borderRadius: BorderRadius.circular(14),
           border: isPlaying
               ? Border.all(color: Colors.pinkAccent, width: 1.5)
@@ -291,7 +312,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: isPlaying ? Colors.pinkAccent.withOpacity(0.1) : Colors.transparent,
+            color: isPlaying
+                ? Colors.pinkAccent.withOpacity(0.1)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -305,7 +328,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Center(
                   child: isPlaying
-                      ? const Icon(Icons.pause, color: Colors.white, size: 20)
+                      ? const Icon(Icons.pause,
+                      color: Colors.white, size: 20)
                       : Text(
                     '$index',
                     style: const TextStyle(
@@ -349,7 +373,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 12),
               Icon(
-                isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                isPlaying
+                    ? Icons.pause_circle_filled
+                    : Icons.play_circle_filled,
                 color: Colors.pinkAccent,
                 size: 32,
               ),
@@ -360,7 +386,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _artistItem(BuildContext context, String name, String imagePath, Song song) {
+  Widget _artistItem(
+      BuildContext context, String name, String imagePath, Song song) {
     final isPlaying = _isCurrentlyPlaying(song.filePath);
 
     return Padding(
@@ -374,11 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.pinkAccent.withOpacity(0.3),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 24,
-            ),
+            child: const Icon(Icons.person, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -396,13 +419,16 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               child: Text(
                 name,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style:
+                const TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
           ),
           IconButton(
             icon: Icon(
-              isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+              isPlaying
+                  ? Icons.pause_circle_filled
+                  : Icons.play_circle_filled,
               color: isPlaying ? Colors.pinkAccent : Colors.white,
               size: 28,
             ),
