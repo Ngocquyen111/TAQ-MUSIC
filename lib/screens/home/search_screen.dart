@@ -30,13 +30,21 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _onSearch(String keyword) {
-    keyword = keyword.toLowerCase();
+    keyword = keyword.trim().toLowerCase();
+
+    if (keyword.isEmpty) {
+      setState(() {
+        _results = [];
+      });
+      return;
+    }
+
     final songs = MusicData.artists
         .expand((artist) => artist.songs)
         .where((song) =>
-    song.title.toLowerCase().contains(keyword) ||
-        song.artist.toLowerCase().contains(keyword))
+        song.title.toLowerCase().startsWith(keyword))
         .toList();
+
     setState(() {
       _results = songs;
     });

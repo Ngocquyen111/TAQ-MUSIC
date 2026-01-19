@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import '../../models/song.dart';
 import '../home/artist_detail_screen.dart';
 
-class DownloadScreen extends StatelessWidget {
+class DownloadScreen extends StatefulWidget {
   const DownloadScreen({super.key});
 
+  @override
+  State<DownloadScreen> createState() => _DownloadScreenState();
+}
+
+class _DownloadScreenState extends State<DownloadScreen> {
   @override
   Widget build(BuildContext context) {
     final songs = MusicStore.downloadedSongs;
@@ -14,7 +19,11 @@ class DownloadScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Nhạc đã tải"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text("Đã tải xuống"),
       ),
       body: songs.isEmpty
           ? const Center(
@@ -28,13 +37,14 @@ class DownloadScreen extends StatelessWidget {
         itemCount: songs.length,
         itemBuilder: (context, index) {
           final song = songs[index];
-          return _songItem(context, song);
+          return _songItem(context, song, index);
         },
       ),
     );
   }
 
-  Widget _songItem(BuildContext context, Song song) {
+  // ================= ITEM =================
+  Widget _songItem(BuildContext context, Song song, int index) {
     return InkWell(
       onTap: () {
         MusicStore.addRecent(song);
@@ -56,21 +66,44 @@ class DownloadScreen extends StatelessWidget {
             const CircleAvatar(
               radius: 22,
               backgroundColor: Colors.white24,
-              child: Icon(Icons.download_done, color: Colors.green),
+              child: Icon(Icons.download_done, color: Colors.greenAccent),
             ),
             const SizedBox(width: 12),
+
+            // ===== TEXT =====
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(song.title,
-                      style:
-                      const TextStyle(color: Colors.white, fontSize: 15)),
-                  Text(song.artist,
-                      style: const TextStyle(
-                          color: Colors.white54, fontSize: 13)),
+                  Text(
+                    song.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
+                  ),
+                  Text(
+                    song.artist,
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 13,
+                    ),
+                  ),
                 ],
               ),
+            ),
+
+            // 🔥 NÚT XOÁ FILE ĐÃ TẢI
+            IconButton(
+              icon: const Icon(
+                Icons.delete_outline,
+                color: Colors.redAccent,
+              ),
+              onPressed: () {
+                setState(() {
+                  MusicStore.downloadedSongs.removeAt(index);
+                });
+              },
             ),
           ],
         ),

@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import '../../models/song.dart';
 import '../home/artist_detail_screen.dart';
 
-class FavoriteScreen extends StatelessWidget {
+class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
 
+  @override
+  State<FavoriteScreen> createState() => _FavoriteScreenState();
+}
+
+class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   Widget build(BuildContext context) {
     final songs = MusicStore.favoriteSongs;
@@ -32,13 +37,14 @@ class FavoriteScreen extends StatelessWidget {
         itemCount: songs.length,
         itemBuilder: (context, index) {
           final song = songs[index];
-          return _songItem(context, song);
+          return _songItem(context, song, index);
         },
       ),
     );
   }
 
-  Widget _songItem(BuildContext context, Song song) {
+  // 🔹 THÊM index để xoá
+  Widget _songItem(BuildContext context, Song song, int index) {
     return InkWell(
       onTap: () {
         MusicStore.addRecent(song);
@@ -63,18 +69,41 @@ class FavoriteScreen extends StatelessWidget {
               child: Icon(Icons.favorite, color: Colors.pink),
             ),
             const SizedBox(width: 12),
+
+            // ===== TEXT =====
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(song.title,
-                      style:
-                      const TextStyle(color: Colors.white, fontSize: 15)),
-                  Text(song.artist,
-                      style: const TextStyle(
-                          color: Colors.white54, fontSize: 13)),
+                  Text(
+                    song.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                    ),
+                  ),
+                  Text(
+                    song.artist,
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 13,
+                    ),
+                  ),
                 ],
               ),
+            ),
+
+            // 🔥 NÚT XOÁ YÊU THÍCH (💔)
+            IconButton(
+              icon: const Icon(
+                Icons.heart_broken,
+                color: Colors.redAccent,
+              ),
+              onPressed: () {
+                setState(() {
+                  MusicStore.favoriteSongs.removeAt(index);
+                });
+              },
             ),
           ],
         ),
