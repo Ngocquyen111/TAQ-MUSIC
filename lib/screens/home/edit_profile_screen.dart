@@ -26,51 +26,153 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Chỉnh sửa thông tin")),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(labelText: "Họ tên"),
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text("Chỉnh sửa hồ sơ"),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // ================= AVATAR =================
+            Center(
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 48,
+                    backgroundColor: Colors.pinkAccent,
+                    child: Text(
+                      UserStore.name.isNotEmpty
+                          ? UserStore.name[0].toUpperCase()
+                          : "U",
+                      style: const TextStyle(
+                        fontSize: 36,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Chỉnh sửa thông tin cá nhân",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              TextField(
-                controller: phoneCtrl,
-                decoration: const InputDecoration(labelText: "Số điện thoại"),
-              ),
-              TextField(
-                controller: birthdayCtrl,
-                decoration: const InputDecoration(labelText: "Ngày sinh"),
-              ),
-              TextField(
-                controller: passwordCtrl,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: "Mật khẩu"),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  UserStore.name = nameCtrl.text;
-                  UserStore.phone = phoneCtrl.text;
-                  UserStore.birthday = birthdayCtrl.text;
-                  UserStore.password = passwordCtrl.text;
+            ),
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Cập nhật thành công")),
-                  );
+            const SizedBox(height: 32),
 
-                  // 👇 TRẢ VỀ TRUE ĐỂ BÁO PROFILE REFRESH
-                  Navigator.pop(context, true);
-                },
-                child: const Text("Lưu thay đổi"),
+            // ================= FORM =================
+            _inputField(
+              controller: nameCtrl,
+              label: "Họ và tên",
+              icon: Icons.person,
+            ),
+            const SizedBox(height: 16),
+
+            _inputField(
+              controller: phoneCtrl,
+              label: "Số điện thoại",
+              icon: Icons.phone,
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 16),
+
+            _inputField(
+              controller: birthdayCtrl,
+              label: "Ngày sinh",
+              icon: Icons.cake,
+            ),
+            const SizedBox(height: 16),
+
+            _inputField(
+              controller: passwordCtrl,
+              label: "Mật khẩu",
+              icon: Icons.lock,
+              obscureText: true,
+            ),
+
+            const SizedBox(height: 32),
+
+            // ================= SAVE BUTTON =================
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.pinkAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: _saveProfile,
+                child: const Text(
+                  "Lưu thay đổi",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );
+  }
+
+  // ================= COMPONENT =================
+
+  Widget _inputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon: Icon(icon, color: Colors.pinkAccent),
+        filled: true,
+        fillColor: Colors.grey[900],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  // ================= SAVE =================
+
+  void _saveProfile() {
+    UserStore.name = nameCtrl.text;
+    UserStore.phone = phoneCtrl.text;
+    UserStore.birthday = birthdayCtrl.text;
+    UserStore.password = passwordCtrl.text;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Cập nhật thông tin thành công"),
+        backgroundColor: Colors.pinkAccent,
+      ),
+    );
+
+    // 🔙 Trả về true để Profile refresh lại
+    Navigator.pop(context, true);
   }
 }

@@ -19,7 +19,9 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
   final MusicService _musicService = MusicService();
+
   List<Song> _results = [];
+  final List<Song> _recentSearches = [];
 
   @override
   void initState() {
@@ -29,45 +31,128 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  // ================= SEARCH =================
+
   void _onSearch(String keyword) {
     keyword = keyword.trim().toLowerCase();
 
     if (keyword.isEmpty) {
-      setState(() {
-        _results = [];
-      });
+      setState(() => _results = []);
       return;
     }
 
     final songs = MusicData.artists
-        .expand((artist) => artist.songs)
-        .where((song) =>
-        song.title.toLowerCase().startsWith(keyword))
+        .expand((a) => a.songs)
+        .where((s) => s.title.toLowerCase().startsWith(keyword))
         .toList();
 
-    setState(() {
-      _results = songs;
-    });
+    setState(() => _results = songs);
   }
 
-  bool _isCurrentlyPlaying(String filePath) {
-    return _musicService.currentSongPath == filePath &&
+  bool _isPlaying(String path) {
+    return _musicService.currentSongPath == path &&
         _musicService.isPlaying;
   }
 
-  // ✅ THÊM HÀM NÀY
   void _handleSongTap(Song song) async {
     if (_musicService.currentSongPath == song.filePath) {
-      if (_musicService.isPlaying) {
-        await _musicService.pause();
-      } else {
-        await _musicService.resume();
-      }
-      setState(() {});
+      _musicService.isPlaying
+          ? await _musicService.pause()
+          : await _musicService.resume();
     } else {
       widget.onSongSelected(song);
+
+      if (!_recentSearches.contains(song)) {
+        _recentSearches.insert(0, song);
+        if (_recentSearches.length > 5) {
+          _recentSearches.removeLast();
+        }
+      }
+    }
+    setState(() {});
+  }
+
+  // ================= CATEGORY =================
+
+  List<Song> _getSongsByCategory(String category) {
+    final allSongs =
+    MusicData.artists.expand((a) => a.songs).toList();
+
+    switch (category) {
+      case "Ballad":
+        return allSongs.where((s) =>
+        s.artist.toLowerCase().contains("noo") ||
+            s.artist.toLowerCase().contains("hà anh tuấn") ||
+            s.artist.toLowerCase().contains("quốc thiên")).toList();
+
+      case "V-Pop":
+        return allSongs;
+
+      case "Tâm trạng":
+        return allSongs.where((s) =>
+        s.title.toLowerCase().contains("buồn") ||
+            s.title.toLowerCase().contains("mưa") ||
+            s.title.toLowerCase().contains("cô đơn")).toList();
+
+      case "Remix":
+        return allSongs
+            .where((s) => s.title.toLowerCase().contains("remix"))
+            .toList();
+
+      default:
+        return [];
     }
   }
+
+  void _openCategory(String title) {
+    final songs = _getSongsByCategory(title);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: songs.isEmpty
+                    ? const Center(
+                  child: Text(
+                    "Chưa có bài hát",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: songs.length,
+                  itemBuilder: (_, i) {
+                    final song = songs[i];
+                    return _buildSongItem(
+                        song, _isPlaying(song.filePath));
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ================= UI =================
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +175,7 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: _searchCtrl,
               onChanged: _onSearch,
               decoration: InputDecoration(
-                hintText: "Bạn muốn nghe gì",
+                hintText: "Bạn muốn nghe gì?",
                 filled: true,
                 fillColor: Colors.white,
                 prefixIcon: const Icon(Icons.search),
@@ -100,52 +185,46 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
 
-            if (_results.isNotEmpty)
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _results.length,
-                itemBuilder: (_, index) {
-                  final song = _results[index];
-                  final isPlaying = _isCurrentlyPlaying(song.filePath);
-                  return _buildSongItem(song, isPlaying);
-                },
+            // ===== SEARCH RESULT =====
+            if (_results.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              const Text("Kết quả",
+                  style: TextStyle(color: Colors.white)),
+              const SizedBox(height: 8),
+              ..._results.map((s) =>
+                  _buildSongItem(s, _isPlaying(s.filePath))),
+            ],
+
+            // ===== RECENT SEARCH =====
+            if (_searchCtrl.text.isEmpty &&
+                _recentSearches.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              const Text(
+                "Tìm kiếm gần đây",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600),
               ),
+              const SizedBox(height: 8),
+              ..._recentSearches.map(
+                    (s) => _buildSongItem(
+                    s, _isPlaying(s.filePath)),
+              ),
+            ],
+
             const SizedBox(height: 24),
 
             const Text(
-              "Khám phá nội dung mới mẻ",
+              "Duyệt tìm",
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              height: 160,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _imageCard("assets/search1.jpg"),
-                  _imageCard("assets/search2.jpg"),
-                  _imageCard("assets/search3.jpg"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
 
-            const Text(
-              "Duyệt tìm tất cả",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
@@ -153,11 +232,17 @@ class _SearchScreenState extends State<SearchScreen> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 1.6,
-              children: const [
-                _BrowseCard("Nhạc", Colors.pink),
-                _BrowseCard("Album", Colors.green),
+              children: [
+                _BrowseCard("Ballad", Colors.pink,
+                    onTap: () => _openCategory("Ballad")),
+                _BrowseCard("V-Pop", Colors.green,
+                    onTap: () => _openCategory("V-Pop")),
+                _BrowseCard("Tâm trạng", Colors.blue,
+                    onTap: () => _openCategory("Tâm trạng")),
+                _BrowseCard("Remix", Colors.orange,
+                    onTap: () => _openCategory("Remix")),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -165,95 +250,57 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSongItem(Song song, bool isPlaying) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        leading: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: isPlaying
-                ? Colors.pinkAccent.withOpacity(0.3)
-                : Colors.grey[800],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            isPlaying ? Icons.pause : Icons.music_note,
-            color: Colors.white,
-          ),
-        ),
-        title: Text(
-          song.title,
-          style: TextStyle(
-            color: isPlaying ? Colors.pinkAccent : Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          song.artist,
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 14,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Icon(
-          isPlaying ? Icons.pause_circle_filled : Icons.play_circle_outline,
-          color: isPlaying ? Colors.pinkAccent : Colors.white,
-          size: 32,
-        ),
-        onTap: () => _handleSongTap(song), // ✅ GỌI HÀM XỬ LÝ
-        tileColor: isPlaying
-            ? Colors.pinkAccent.withOpacity(0.1)
-            : Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    return ListTile(
+      onTap: () => _handleSongTap(song),
+      leading: CircleAvatar(
+        backgroundColor:
+        isPlaying ? Colors.pinkAccent : Colors.grey[800],
+        child: Icon(
+          isPlaying ? Icons.pause : Icons.music_note,
+          color: Colors.white,
         ),
       ),
-    );
-  }
-
-  Widget _imageCard(String path) {
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(
-          image: AssetImage(path),
-          fit: BoxFit.cover,
-        ),
+      title: Text(song.title,
+          style: const TextStyle(color: Colors.white)),
+      subtitle: Text(song.artist,
+          style: const TextStyle(color: Colors.white54)),
+      trailing: Icon(
+        isPlaying ? Icons.pause_circle : Icons.play_circle,
+        color: Colors.pinkAccent,
       ),
     );
   }
 }
 
+// ================= BROWSE CARD =================
+
 class _BrowseCard extends StatelessWidget {
   final String title;
   final Color color;
+  final VoidCallback onTap;
 
-  const _BrowseCard(this.title, this.color);
+  const _BrowseCard(this.title, this.color,
+      {required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      padding: const EdgeInsets.all(12),
-      alignment: Alignment.bottomLeft,
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        padding: const EdgeInsets.all(12),
+        alignment: Alignment.bottomLeft,
+        child: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

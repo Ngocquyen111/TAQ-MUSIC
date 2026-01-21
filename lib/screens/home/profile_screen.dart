@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // 🔹 ADDED
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../user_store.dart';
 import 'edit_profile_screen.dart';
 
@@ -16,17 +16,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   File? _avatarImage;
   final ImagePicker _picker = ImagePicker();
 
-  // 🔹 ADDED: key lưu avatar
   static const String _avatarKey = 'user_avatar_path';
 
-  // 🔹 ADDED: load avatar khi mở màn hình
   @override
   void initState() {
     super.initState();
     _loadAvatar();
   }
 
-  // 🔹 ADDED: đọc avatar từ SharedPreferences
   Future<void> _loadAvatar() async {
     final prefs = await SharedPreferences.getInstance();
     final path = prefs.getString(_avatarKey);
@@ -37,7 +34,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // ✅ CHỌN ẢNH TỪ THIẾT BỊ
   Future<void> _pickAvatar() async {
     final XFile? image =
     await _picker.pickImage(source: ImageSource.gallery);
@@ -47,26 +43,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _avatarImage = File(image.path);
       });
 
-      // 🔹 ADDED: lưu avatar
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_avatarKey, image.path);
     }
   }
 
-  Widget info(String label, String value) {
-    return ListTile(
-      title: Text(label),
-      subtitle: Text(value),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF4A0000),
+      backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF4A0000),
-        title: const Text("Trang cá nhân"),
+        backgroundColor: const Color(0xFF0F0F0F),
+        elevation: 0,
+        title: const Text(
+          "Trang cá nhân",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -85,10 +77,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: ListView(
+        padding: const EdgeInsets.all(20),
         children: [
-          const SizedBox(height: 30),
-
-          // ================= AVATAR =================
+          // ================= HEADER =================
           Center(
             child: GestureDetector(
               onTap: _pickAvatar,
@@ -96,31 +87,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 alignment: Alignment.bottomRight,
                 children: [
                   CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Colors.green,
+                    radius: 60,
+                    backgroundColor: Colors.pinkAccent,
                     backgroundImage:
                     _avatarImage != null ? FileImage(_avatarImage!) : null,
                     child: _avatarImage == null
-                        ? const Icon(Icons.person,
-                        size: 60, color: Colors.white)
+                        ? Text(
+                      UserStore.name.isNotEmpty
+                          ? UserStore.name[0].toUpperCase()
+                          : "U",
+                      style: const TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    )
                         : null,
                   ),
-
-                  // 🔹 ICON DẤU +
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
-                      color: Colors.pinkAccent,
+                      color: Colors.black,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: const Icon(
-                      Icons.add,
+                      Icons.camera_alt,
                       color: Colors.white,
-                      size: 20,
+                      size: 18,
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
@@ -128,25 +125,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 16),
 
-          // ================= TÊN =================
           Center(
             child: Text(
               UserStore.name,
               style: const TextStyle(
+                color: Colors.white,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
               ),
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 32),
 
-          // ================= THÔNG TIN =================
-          info("Email", UserStore.email),
-          info("Số điện thoại", UserStore.phone),
-          info("Ngày sinh", UserStore.birthday),
-          info("Mật khẩu", "******"),
+          // ================= INFO CARD =================
+          _infoCard(
+            icon: Icons.email,
+            label: "Email",
+            value: UserStore.email,
+          ),
+          _infoCard(
+            icon: Icons.phone,
+            label: "Số điện thoại",
+            value: UserStore.phone,
+          ),
+          _infoCard(
+            icon: Icons.cake,
+            label: "Ngày sinh",
+            value: UserStore.birthday,
+          ),
+          _infoCard(
+            icon: Icons.lock,
+            label: "Mật khẩu",
+            value: "******",
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= COMPONENT =================
+
+  Widget _infoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1C),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: Colors.pinkAccent.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.pinkAccent),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          )
         ],
       ),
     );
