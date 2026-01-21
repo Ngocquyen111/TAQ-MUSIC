@@ -21,27 +21,39 @@ class _HomeScreenState extends State<HomeScreen> {
     Song(
       title: "Cause I Love You",
       artist: "Noo Phước Thịnh",
-      filePath: "songs/cause_i_love_you.mp3",
+      filePath: "songs/Cause I Love You (Xuân Phát Tài 8).mp3",
       duration: "3:45",
+      artistImage: "assets/images/artists/noo.jpg",
     ),
     Song(
       title: "Nhà Tôi Có Treo Một Lá Cờ",
       artist: "Hà Anh Tuấn",
       filePath: "songs/Nhà Tôi Có Treo Một Lá Cờ.mp3",
       duration: "4:20",
+      artistImage: "assets/images/artists/ha_anh_tuan.jpg",
     ),
     Song(
       title: "Hoa và Váy",
       artist: "Quốc Thiên",
-      filePath: "songs/Hoa và Váy (RnB ver).mp3",
+      filePath: "songs/Hoa và Váy (Rock ver).mp3",
       duration: "3:30",
+      artistImage: "assets/images/artists/quoc_thien.jpg",
     ),
   ];
 
   final List<Map<String, String>> _artists = [
-    {"name": "Noo Phước Thịnh", "image": ""},
-    {"name": "Hà Anh Tuấn", "image": ""},
-    {"name": "Quốc Thiên", "image": ""},
+    {
+      "name": "Noo Phước Thịnh",
+      "image": "assets/images/artists/noo.jpg",
+    },
+    {
+      "name": "Hà Anh Tuấn",
+      "image": "assets/images/artists/ha_anh_tuan.jpg",
+    },
+    {
+      "name": "Quốc Thiên",
+      "image": "assets/images/artists/quoc_thien.jpg",
+    },
   ];
 
   // ================== PLAYER ==================
@@ -170,26 +182,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       children: [
                         Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.pinkAccent.withOpacity(0.35),
-                                  Colors.pinkAccent.withOpacity(0.1),
-                                ],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(24),
-                              ),
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(24),
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.person,
-                                size: 72,
-                                color: Colors.white,
-                              ),
+                            child: Image.asset(
+                              artist["image"]!,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
@@ -256,6 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ✅ MINI ITEM – HIỂN THỊ ẢNH NGHỆ SĨ
   Widget _miniItem(Song song) {
     final isPlaying = _isPlaying(song.filePath);
 
@@ -269,51 +270,32 @@ class _HomeScreenState extends State<HomeScreen> {
               ? Colors.pinkAccent.withOpacity(0.2)
               : AppColors.card,
           borderRadius: BorderRadius.circular(14),
-          border: isPlaying
-              ? Border.all(color: Colors.pinkAccent, width: 1.5)
-              : null,
         ),
         child: Row(
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.pinkAccent.withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isPlaying ? Icons.pause : Icons.music_note,
-                color: Colors.white,
-                size: 20,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Image.asset(
+                song.artistImage,
+                width: 36,
+                height: 36,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) {
+                  return const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.pinkAccent,
+                    child: Icon(Icons.person, color: Colors.white),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    song.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    song.artist,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
+              child: Text(
+                song.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ],
@@ -325,84 +307,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _songItem(Song song, int index) {
     final isPlaying = _isPlaying(song.filePath);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () => _playSong(song),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isPlaying
-                ? Colors.pinkAccent.withOpacity(0.1)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isPlaying ? Colors.pinkAccent : AppColors.card,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: isPlaying
-                      ? const Icon(Icons.pause,
-                      color: Colors.white, size: 20)
-                      : Text(
-                    '$index',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      song.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      song.artist,
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                song.duration,
-                style: const TextStyle(
-                  color: Colors.white54,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Icon(
-                isPlaying
-                    ? Icons.pause_circle_filled
-                    : Icons.play_circle_filled,
-                color: Colors.pinkAccent,
-                size: 32,
-              ),
-            ],
-          ),
-        ),
+    return ListTile(
+      onTap: () => _playSong(song),
+      leading: CircleAvatar(
+        backgroundColor: isPlaying ? Colors.pinkAccent : AppColors.card,
+        child: Text('$index', style: const TextStyle(color: Colors.white)),
+      ),
+      title:
+      Text(song.title, style: const TextStyle(color: Colors.white)),
+      subtitle:
+      Text(song.artist, style: const TextStyle(color: Colors.white54)),
+      trailing: Icon(
+        isPlaying ? Icons.pause : Icons.play_arrow,
+        color: Colors.pinkAccent,
       ),
     );
   }

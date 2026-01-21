@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
   shared_preferences: ^2.2.2
   audioplayers: ^5.2.1
   just_audio: ^0.9.36
@@ -18,15 +19,14 @@ dependencies:
   google_sign_in: ^6.2.1
   image_picker: ^1.0.7
 
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
 flutter:
   uses-material-design: true
+
   assets:
     - assets/songs/
-
-
+    - assets/images/
+    - assets/images/artists/
