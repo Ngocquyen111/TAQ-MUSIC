@@ -3,7 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../services/music_service.dart';
 import '../../models/song.dart';
 import 'artist_detail_screen.dart';
-import 'profile_screen.dart'; // 🔽 ADDED
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final MusicService _musicService = MusicService();
 
+  // ================== DATA ==================
+
   final List<Song> _songs = [
     Song(
       title: "Cause I Love You",
@@ -23,42 +25,46 @@ class _HomeScreenState extends State<HomeScreen> {
       duration: "3:45",
     ),
     Song(
-      title: "Bài hát 2",
+      title: "Nhà Tôi Có Treo Một Lá Cờ",
       artist: "Hà Anh Tuấn",
-      filePath: "songs/song2.mp3",
+      filePath: "songs/Nhà Tôi Có Treo Một Lá Cờ.mp3",
       duration: "4:20",
     ),
     Song(
-      title: "Bài hát 3",
-      artist: "Hồng Nhan J97",
-      filePath: "songs/song3.mp3",
+      title: "Hoa và Váy",
+      artist: "Quốc Thiên",
+      filePath: "songs/Hoa và Váy (RnB ver).mp3",
       duration: "3:30",
     ),
   ];
 
-  String? _currentPlayingSong;
+  final List<Map<String, String>> _artists = [
+    {"name": "Noo Phước Thịnh", "image": ""},
+    {"name": "Hà Anh Tuấn", "image": ""},
+    {"name": "Quốc Thiên", "image": ""},
+  ];
+
+  // ================== PLAYER ==================
 
   @override
   void initState() {
     super.initState();
-    _musicService.onPlayerStateChanged.listen((state) {
-      if (mounted) {
-        setState(() {});
-      }
+    _musicService.onPlayerStateChanged.listen((_) {
+      if (mounted) setState(() {});
     });
   }
 
   void _playSong(Song song) async {
     await _musicService.play(song.filePath);
-    setState(() {
-      _currentPlayingSong = song.filePath;
-    });
+    setState(() {});
   }
 
-  bool _isCurrentlyPlaying(String filePath) {
+  bool _isPlaying(String filePath) {
     return _musicService.currentSongPath == filePath &&
         _musicService.isPlaying;
   }
+
+  // ================== UI ==================
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // ================= HEADER =================
           Row(
             children: [
-              // 🔽 ADDED: bọc CircleAvatar để click vào Profile
               InkWell(
                 borderRadius: BorderRadius.circular(20),
                 onTap: () {
@@ -85,8 +91,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Icon(Icons.music_note, color: Colors.white),
                 ),
               ),
-              // 🔼 END ADDED
-
               const SizedBox(width: 12),
               _chip("Tất cả", active: true),
             ],
@@ -105,79 +109,113 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 12),
 
+          // ================= MINI SONGS =================
           GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _songs.length > 4 ? 4 : _songs.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 3.2,
             ),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _songs.length > 4 ? 4 : _songs.length,
             itemBuilder: (context, index) {
-              final song = _songs[index];
-              return _miniItem(song);
+              return _miniItem(_songs[index]);
             },
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ArtistDetailScreen(
-                    artistName: "Noo Phước Thịnh",
-                    artistImage: "",
-                  ),
-                ),
-              );
-            },
-            child: Container(
-              height: 240,
-              decoration: BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.pinkAccent.withOpacity(0.2),
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(24),
-                        ),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.person,
-                          size: 80,
-                          color: Colors.pinkAccent,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text(
-                      "Noo Phước Thịnh",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                ],
-              ),
+          // ================= ARTISTS =================
+          const Text(
+            "Nghệ sĩ nổi bật",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
 
+          SizedBox(
+            height: 230,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _artists.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 16),
+              itemBuilder: (context, index) {
+                final artist = _artists[index];
+
+                return InkWell(
+                  borderRadius: BorderRadius.circular(24),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ArtistDetailScreen(
+                          artistName: artist["name"]!,
+                          artistImage: artist["image"]!,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 170,
+                    decoration: BoxDecoration(
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.pinkAccent.withOpacity(0.35),
+                                  Colors.pinkAccent.withOpacity(0.1),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(24),
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.person,
+                                size: 72,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Text(
+                            artist["name"]!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // ================= RANKING =================
           const Text(
             "Bảng xếp hạng",
             style: TextStyle(
@@ -194,33 +232,15 @@ class _HomeScreenState extends State<HomeScreen> {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _songs.length,
             itemBuilder: (context, index) {
-              final song = _songs[index];
-              return _songItem(song, index + 1);
+              return _songItem(_songs[index], index + 1);
             },
           ),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            "Nghệ sĩ",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          _artistItem(context, "Noo Phước Thịnh", "assets/artist.jpg", _songs[0]),
-          _artistItem(context, "Hà Anh Tuấn", "assets/artist.jpg",
-              _songs.length > 1 ? _songs[1] : _songs[0]),
-          _artistItem(context, "Hồng Nhan J97", "assets/artist.jpg",
-              _songs.length > 2 ? _songs[2] : _songs[0]),
         ],
       ),
     );
   }
+
+  // ================= COMPONENTS =================
 
   Widget _chip(String text, {bool active = false}) {
     return Container(
@@ -237,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _miniItem(Song song) {
-    final isPlaying = _isCurrentlyPlaying(song.filePath);
+    final isPlaying = _isPlaying(song.filePath);
 
     return InkWell(
       onTap: () => _playSong(song),
@@ -245,8 +265,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color:
-          isPlaying ? Colors.pinkAccent.withOpacity(0.2) : AppColors.card,
+          color: isPlaying
+              ? Colors.pinkAccent.withOpacity(0.2)
+              : AppColors.card,
           borderRadius: BorderRadius.circular(14),
           border: isPlaying
               ? Border.all(color: Colors.pinkAccent, width: 1.5)
@@ -275,26 +296,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     song.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     song.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white54,
                       fontSize: 11,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -302,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _songItem(Song song, int index) {
-    final isPlaying = _isCurrentlyPlaying(song.filePath);
+    final isPlaying = _isPlaying(song.filePath);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -382,59 +403,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _artistItem(
-      BuildContext context, String name, String imagePath, Song song) {
-    final isPlaying = _isCurrentlyPlaying(song.filePath);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.pinkAccent.withOpacity(0.3),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.person, color: Colors.white, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ArtistDetailScreen(
-                      artistName: name,
-                      artistImage: imagePath,
-                    ),
-                  ),
-                );
-              },
-              child: Text(
-                name,
-                style:
-                const TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: Icon(
-              isPlaying
-                  ? Icons.pause_circle_filled
-                  : Icons.play_circle_filled,
-              color: isPlaying ? Colors.pinkAccent : Colors.white,
-              size: 28,
-            ),
-            onPressed: () => _playSong(song),
-          ),
-        ],
       ),
     );
   }

@@ -33,12 +33,12 @@ class MusicService {
 
   Future<void> pause() async {
     await _audioPlayer.pause();
-    _isPlaying = false; // ✅ CẬP NHẬT NGAY
+    _isPlaying = false;
   }
 
   Future<void> resume() async {
     await _audioPlayer.resume();
-    _isPlaying = true; // ✅ CẬP NHẬT NGAY
+    _isPlaying = true;
   }
 
   Future<void> stop() async {

@@ -3,7 +3,7 @@ import '../models/song.dart';
 
 class MusicData {
   static final List<Artist> artists = [
-    // Noo Phước Thịnh
+    // ================= NOO PHƯỚC THỊNH =================
     Artist(
       name: "Noo Phước Thịnh",
       image: "",
@@ -23,7 +23,7 @@ class MusicData {
         Song(
           title: "Cause I Love You",
           artist: "Noo Phước Thịnh",
-          filePath: "songs/cause_i_love_you.mp3",
+          filePath: "songs/Cause I Love You (Xuân Phát Tài 8).mp3",
           duration: "4:45",
         ),
         Song(
@@ -41,7 +41,7 @@ class MusicData {
       ],
     ),
 
-    // Hà Anh Tuấn
+    // ================= HÀ ANH TUẤN =================
     Artist(
       name: "Hà Anh Tuấn",
       image: "",
@@ -53,7 +53,7 @@ class MusicData {
           duration: "4:45",
         ),
         Song(
-          title: "Tháng mấy em nhớ anh",
+          title: "Tháng Mấy Em Nhớ Anh",
           artist: "Hà Anh Tuấn",
           filePath: "songs/Tháng Mấy Em Nhớ Anh_.mp3",
           duration: "4:28",
@@ -65,13 +65,13 @@ class MusicData {
           duration: "4:12",
         ),
         Song(
-          title: "Nhà tôi có treo một lá cờ",
+          title: "Nhà Tôi Có Treo Một Lá Cờ",
           artist: "Hà Anh Tuấn",
           filePath: "songs/Nhà Tôi Có Treo Một Lá Cờ.mp3",
           duration: "4:35",
         ),
         Song(
-          title: "Cơn mưa tình yêu",
+          title: "Cơn Mưa Tình Yêu",
           artist: "Hà Anh Tuấn",
           filePath: "songs/Cơn Mưa Tình Yêu.mp3",
           duration: "4:18",
@@ -79,9 +79,35 @@ class MusicData {
       ],
     ),
 
-    // Hồng Nhan J97
+    // ================= QUỐC THIÊN =================
     Artist(
-      name: "Hồng Nhan J97",
+      name: "Quốc Thiên",
+      image: "",
+      songs: [
+        Song(
+          title: "Hoa và Váy",
+          artist: "Quốc Thiên",
+          filePath: "songs/Hoa và Váy (RnB ver).mp3",
+          duration: "3:30",
+        ),
+        Song(
+          title: "Kiếp Sau Vẫn Là Người Việt Nam",
+          artist: "Quốc Thiên",
+          filePath: "songs/Kiếp Sau Vẫn Là Người Việt Nam.mp3",
+          duration: "4:12",
+        ),
+        Song(
+          title: "Rất Lâu Rồi Mới Khóc",
+          artist: "Quốc Thiên",
+          filePath: "songs/Rất Lâu Rồi Mới Khóc (New Version).mp3",
+          duration: "4:05",
+        ),
+      ],
+    ),
+
+    // ================= JACK - J97 =================
+    Artist(
+      name: "J97",
       image: "",
       songs: [
         Song(
@@ -91,19 +117,19 @@ class MusicData {
           duration: "4:22",
         ),
         Song(
-          title: "Sóng gió",
+          title: "Sóng Gió",
           artist: "Jack - J97",
           filePath: "songs/Sóng Gió.mp3",
           duration: "4:05",
         ),
         Song(
-          title: "Về bên anh",
+          title: "Về Bên Anh",
           artist: "Jack - J97",
           filePath: "songs/Về Bên Anh.mp3",
           duration: "3:58",
         ),
         Song(
-          title: "Trạm dừng chân",
+          title: "Trạm Dừng Chân",
           artist: "Jack - J97",
           filePath: "songs/Trạm Dừng Chân.mp3",
           duration: "4:15",
@@ -118,16 +144,18 @@ class MusicData {
     ),
   ];
 
-  // Lấy artist theo tên
+  // ================= HELPER METHODS =================
+
+  /// Lấy artist theo tên (so khớp tuyệt đối)
   static Artist? getArtistByName(String name) {
     try {
       return artists.firstWhere((artist) => artist.name == name);
-    } catch (e) {
+    } catch (_) {
       return null;
     }
   }
 
-  // Lấy tất cả bài hát của một artist
+  /// Lấy danh sách bài hát của một artist
   static List<Song> getSongsByArtist(String artistName) {
     final artist = getArtistByName(artistName);
     return artist?.songs ?? [];
