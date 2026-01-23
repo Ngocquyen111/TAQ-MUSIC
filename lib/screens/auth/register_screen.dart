@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../user_store.dart';
+import '../../core/firebase_service.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -26,7 +26,6 @@ class RegisterScreen extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 40),
-
                 const Text(
                   "Register",
                   style: TextStyle(
@@ -35,14 +34,13 @@ class RegisterScreen extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 32),
 
                 _label("Name"),
                 _input(nameCtrl, "Nguyen Van A"),
 
-                _label("Tên đăng nhập"),
-                _input(usernameCtrl, "username123"),
+                _label("Username"),
+                _input(usernameCtrl, "taq123"),
 
                 _label("Password"),
                 _input(passCtrl, "", obscure: true),
@@ -54,7 +52,7 @@ class RegisterScreen extends StatelessWidget {
 
                 _button(
                   text: "Register",
-                  onTap: () {
+                  onTap: () async {
                     if (nameCtrl.text.isEmpty ||
                         usernameCtrl.text.isEmpty ||
                         passCtrl.text != confirmCtrl.text) {
@@ -64,26 +62,31 @@ class RegisterScreen extends StatelessWidget {
                       return;
                     }
 
-                    UserStore.name = nameCtrl.text;
-                    UserStore.username = usernameCtrl.text;
-                    UserStore.password = passCtrl.text;
-                    UserStore.hasRegistered = true;
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Đăng ký thành công")),
+                    final firebase = FirebaseService();
+                    final user = await firebase.register(
+                      name: nameCtrl.text,
+                      username: usernameCtrl.text,
+                      password: passCtrl.text,
                     );
 
-                    Navigator.pop(context);
+                    if (user != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Đăng ký thành công")),
+                      );
+                      Navigator.pop(context);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Đăng ký thất bại")),
+                      );
+                    }
                   },
                 ),
 
                 const SizedBox(height: 12),
-
                 _button(
                   text: "Back to login",
                   onTap: () => Navigator.pop(context),
                 ),
-
                 const SizedBox(height: 30),
               ],
             ),
@@ -93,29 +96,17 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  // ===== LABEL =====
-  Widget _label(String text) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _label(String text) => Align(
+    alignment: Alignment.centerLeft,
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(text,
+          style: const TextStyle(color: Colors.white, fontSize: 14)),
+    ),
+  );
 
-  // ===== INPUT BOX =====
-  Widget _input(
-      TextEditingController ctrl,
-      String hint, {
-        bool obscure = false,
-      }) {
+  Widget _input(TextEditingController ctrl, String hint,
+      {bool obscure = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       height: 42,
@@ -136,11 +127,7 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  // ===== BUTTON =====
-  Widget _button({
-    required String text,
-    required VoidCallback onTap,
-  }) {
+  Widget _button({required String text, required VoidCallback onTap}) {
     return SizedBox(
       width: 180,
       height: 40,
@@ -148,10 +135,8 @@ class RegisterScreen extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFFC1C1),
           foregroundColor: Colors.black,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: 2,
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
         onPressed: onTap,
         child: Text(text),

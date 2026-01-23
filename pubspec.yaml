@@ -18,6 +18,7 @@ dependencies:
   firebase_auth: ^4.17.0
   google_sign_in: ^6.2.1
   image_picker: ^1.0.7
+  cloud_firestore: ^4.13.0
 
 dev_dependencies:
   flutter_test:
@@ -30,7 +31,4 @@ flutter:
     - assets/songs/
     - assets/images/
     - assets/images/artists/
-    - assets/images/noti/1.jpg
-    - assets/images/noti/2.jpg
-    - assets/images/noti/3.jpg
 

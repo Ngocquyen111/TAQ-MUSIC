@@ -93,12 +93,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             const SizedBox(height: 16),
 
-            _inputField(
-              controller: passwordCtrl,
-              label: "Mật khẩu",
-              icon: Icons.lock,
-              obscureText: true,
-            ),
+
 
             const SizedBox(height: 32),
 
@@ -129,8 +124,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // ================= COMPONENT =================
-
   Widget _inputField({
     required TextEditingController controller,
     required String label,
@@ -157,8 +150,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // ================= SAVE =================
-
   void _saveProfile() {
     UserStore.name = nameCtrl.text;
     UserStore.phone = phoneCtrl.text;
@@ -172,7 +163,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
 
-    // 🔙 Trả về true để Profile refresh lại
     Navigator.pop(context, true);
   }
 }

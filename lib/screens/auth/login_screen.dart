@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../user_store.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../home/main_screen.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
@@ -13,9 +13,10 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final usernameCtrl = TextEditingController();
+  final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   bool hidePassword = true;
+  bool loading = false;
 
   final FirebaseService _firebaseService = FirebaseService();
 
@@ -28,56 +29,53 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
-                child: Text(
-                  "LOGIN",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
+              const Text(
+                "LOGIN",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
 
               const SizedBox(height: 40),
 
-              const Text("Tên đăng nhập:", style: TextStyle(color: Colors.white)),
-              const SizedBox(height: 6),
-              _input(usernameCtrl),
+              _input(emailCtrl, "Username"),
 
               const SizedBox(height: 20),
 
-              const Text("Password:", style: TextStyle(color: Colors.white)),
-              const SizedBox(height: 6),
               _passwordInput(),
 
               const SizedBox(height: 10),
 
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ForgotPasswordScreen(),
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ForgotPasswordScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Quên mật khẩu?",
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      decoration: TextDecoration.underline,
                     ),
-                  );
-                },
-                child: const Text(
-                  "Quên mật khẩu?",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    decoration: TextDecoration.underline,
                   ),
                 ),
               ),
 
               const SizedBox(height: 24),
 
-              Row(
+              loading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _actionButton("Login", _login),
@@ -94,35 +92,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 30),
 
-              const Center(
-                child: Text(
-                  "Hoặc tiếp tục bằng",
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
-                ),
+              const Text(
+                "Hoặc tiếp tục bằng",
+                style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
 
               const SizedBox(height: 16),
 
-              // ===== GOOGLE LOGIN =====
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: _loginWithGoogle,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: const Icon(
-                        Icons.g_mobiledata,
-                        color: Colors.black,
-                        size: 36,
-                      ),
-                    ),
+              GestureDetector(
+                onTap: _loginWithGoogle,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
                   ),
-                ],
+                  child: const Icon(
+                    Icons.g_mobiledata,
+                    color: Colors.black,
+                    size: 36,
+                  ),
+                ),
               ),
             ],
           ),
@@ -131,15 +121,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _input(TextEditingController ctrl) {
+  Widget _input(TextEditingController ctrl, String hint) {
     return TextField(
       controller: ctrl,
+      keyboardType: TextInputType.emailAddress,
       style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
+        hintText: hint,
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -152,12 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextField(
       controller: passCtrl,
       obscureText: hidePassword,
-      style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
+        hintText: "Password",
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -192,40 +180,51 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _login() {
-    if (!UserStore.hasRegistered) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Bạn chưa đăng ký")),
-      );
+  /// ===== EMAIL LOGIN (FIREBASE) =====
+  Future<void> _login() async {
+    if (emailCtrl.text.isEmpty || passCtrl.text.isEmpty) {
+      _toast("Vui lòng nhập đầy đủ thông tin");
       return;
     }
 
-    if (usernameCtrl.text == UserStore.username &&
-        passCtrl.text == UserStore.password) {
-      UserStore.isLoggedIn = true;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
+    setState(() => loading = true);
+
+    try {
+      final user = await _firebaseService.loginWithEmail(
+        emailCtrl.text.trim(),
+        passCtrl.text.trim(),
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Sai tên đăng nhập hoặc mật khẩu")),
-      );
+
+      if (user != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      _toast(e.message ?? "Đăng nhập thất bại");
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
+  /// ===== GOOGLE LOGIN =====
   Future<void> _loginWithGoogle() async {
     final user = await _firebaseService.signInWithGoogle();
 
-    if (user != null) {
+    if (user != null && mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Đăng nhập Google thất bại")),
-      );
+      _toast("Đăng nhập Google thất bại");
     }
+  }
+
+  void _toast(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
   }
 }

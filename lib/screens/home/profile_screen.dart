@@ -18,6 +18,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   static const String _avatarKey = 'user_avatar_path';
 
+  bool _showPassword = false;
+
   @override
   void initState() {
     super.initState();
@@ -140,32 +142,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // ================= INFO CARD =================
           _infoCard(
+            icon: Icons.person,
+            label: "Họ và tên",
+            value: UserStore.name,
+          ),
+
+          _infoCard(
+            icon: Icons.account_circle,
+            label: "Username",
+            value: UserStore.username,
+          ),
+
+          _infoCard(
             icon: Icons.email,
             label: "Email",
             value: UserStore.email,
           ),
+
           _infoCard(
             icon: Icons.phone,
             label: "Số điện thoại",
             value: UserStore.phone,
           ),
+
           _infoCard(
             icon: Icons.cake,
             label: "Ngày sinh",
             value: UserStore.birthday,
           ),
-          _infoCard(
-            icon: Icons.lock,
-            label: "Mật khẩu",
-            value: "******",
-          ),
+
+
         ],
       ),
     );
   }
 
-  // ================= COMPONENT =================
-
+  // ================= INFO CARD =================
   Widget _infoCard({
     required IconData icon,
     required String label,
@@ -180,15 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: Colors.pinkAccent.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: Colors.pinkAccent),
-          ),
+          _iconBox(icon),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -215,6 +219,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
           )
         ],
       ),
+    );
+  }
+
+  // ================= PASSWORD CARD =================
+  Widget _passwordCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1C),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          _iconBox(Icons.lock),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Mật khẩu",
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _showPassword ? UserStore.password : "******",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              _showPassword ? Icons.visibility : Icons.visibility_off,
+              color: Colors.white54,
+            ),
+            onPressed: () {
+              setState(() => _showPassword = !_showPassword);
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _iconBox(IconData icon) {
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: Colors.pinkAccent.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, color: Colors.pinkAccent),
     );
   }
 }
