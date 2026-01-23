@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../user_store.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -14,13 +15,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController birthdayCtrl;
   late TextEditingController passwordCtrl;
 
+  bool _saving = false;
+
   @override
   void initState() {
     super.initState();
     nameCtrl = TextEditingController(text: UserStore.name);
     phoneCtrl = TextEditingController(text: UserStore.phone);
     birthdayCtrl = TextEditingController(text: UserStore.birthday);
-    passwordCtrl = TextEditingController(text: UserStore.password);
   }
 
   @override
@@ -91,9 +93,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               label: "Ngày sinh",
               icon: Icons.cake,
             ),
-            const SizedBox(height: 16),
-
-
 
             const SizedBox(height: 32),
 
@@ -108,8 +107,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: _saveProfile,
-                child: const Text(
+                onPressed: _saving ? null : _saveProfile,
+                child: _saving
+                    ? const CircularProgressIndicator(
+                  color: Colors.white,
+                )
+                    : const Text(
                   "Lưu thay đổi",
                   style: TextStyle(
                     fontSize: 16,
@@ -150,19 +153,46 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  void _saveProfile() {
-    UserStore.name = nameCtrl.text;
-    UserStore.phone = phoneCtrl.text;
-    UserStore.birthday = birthdayCtrl.text;
-    UserStore.password = passwordCtrl.text;
+  /// ================= SAVE TO FIREBASE =================
+  Future<void> _saveProfile() async {
+    if (UserStore.uid.isEmpty) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Cập nhật thông tin thành công"),
-        backgroundColor: Colors.pinkAccent,
-      ),
-    );
+    setState(() => _saving = true);
 
-    Navigator.pop(context, true);
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(UserStore.uid)
+          .update({
+        'name': nameCtrl.text.trim(),
+        'phone': phoneCtrl.text.trim(),
+        'birthday': birthdayCtrl.text.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // ✅ Update local store
+      UserStore.name = nameCtrl.text.trim();
+      UserStore.phone = phoneCtrl.text.trim();
+      UserStore.birthday = birthdayCtrl.text.trim();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Cập nhật thông tin thành công"),
+            backgroundColor: Colors.pinkAccent,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Lỗi cập nhật: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 }

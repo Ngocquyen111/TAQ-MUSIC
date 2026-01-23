@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../models/song.dart';
 import '../home/artist_detail_screen.dart';
 
@@ -10,6 +13,9 @@ class FavoriteScreen extends StatefulWidget {
 }
 
 class _FavoriteScreenState extends State<FavoriteScreen> {
+  final _firestore = FirebaseFirestore.instance;
+  final _uid = FirebaseAuth.instance.currentUser!.uid;
+
   @override
   Widget build(BuildContext context) {
     final songs = MusicStore.favoriteSongs;
@@ -43,11 +49,16 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     );
   }
 
-  // 🔹 THÊM index để xoá
   Widget _songItem(BuildContext context, Song song, int index) {
     return InkWell(
-      onTap: () {
+      onTap: () async {
+        // ===== GIỮ LOGIC CŨ =====
         MusicStore.addRecent(song);
+
+        // ===== LƯU RECENT LÊN FIREBASE =====
+        await _firestore.collection('users').doc(_uid).update({
+          'recent': FieldValue.arrayUnion([_songToMap(song)])
+        });
 
         Navigator.push(
           context,
@@ -93,15 +104,19 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               ),
             ),
 
-            // 🔥 NÚT XOÁ YÊU THÍCH (💔)
+            // 💔 XOÁ YÊU THÍCH (LOCAL + FIREBASE)
             IconButton(
               icon: const Icon(
                 Icons.heart_broken,
                 color: Colors.redAccent,
               ),
-              onPressed: () {
+              onPressed: () async {
                 setState(() {
                   MusicStore.favoriteSongs.removeAt(index);
+                });
+
+                await _firestore.collection('users').doc(_uid).update({
+                  'favorites': FieldValue.arrayRemove([_songToMap(song)])
                 });
               },
             ),
@@ -109,5 +124,16 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         ),
       ),
     );
+  }
+
+  // ===== SONG → MAP =====
+  Map<String, dynamic> _songToMap(Song song) {
+    return {
+      'title': song.title,
+      'artist': song.artist,
+      'filePath': song.filePath,
+      'duration': song.duration,
+      'artistImage': song.artistImage,
+    };
   }
 }

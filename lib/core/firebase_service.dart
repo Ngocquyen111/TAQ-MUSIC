@@ -3,16 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 
+import '../models/song.dart';
 import '../user_store.dart';
 
 class FirebaseService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+  final _auth = FirebaseAuth.instance;
+  final _db = FirebaseFirestore.instance;
+  final _google = GoogleSignIn(scopes: ['email']);
 
-  /// =========================
-  /// REGISTER
-  /// =========================
+  /// ================= REGISTER =================
   Future<User?> register({
     required String name,
     required String username,
@@ -34,9 +33,8 @@ class FirebaseService {
           'email': email,
           'phone': '',
           'birthday': '',
-          'favorites': [],
-          'downloads': [],
           'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
         });
       }
       return user;
@@ -46,13 +44,8 @@ class FirebaseService {
     }
   }
 
-  /// =========================
-  /// LOGIN WITH USERNAME + PASSWORD ✅ FIX
-  /// =========================
-  Future<User?> loginWithEmail(
-      String username,
-      String password,
-      ) async {
+  /// ================= LOGIN =================
+  Future<User?> loginWithEmail(String username, String password) async {
     try {
       final email = "$username@taqmusic.com";
 
@@ -61,40 +54,19 @@ class FirebaseService {
         password: password,
       );
 
-      final user = cred.user;
-      if (user != null) {
-        final doc =
-        await _db.collection('users').doc(user.uid).get();
-
-        if (doc.exists) {
-          final data = doc.data()!;
-
-          /// 🔥 GÁN ĐẦY ĐỦ USERSTORE
-          UserStore.uid = user.uid;
-          UserStore.name = data['name'] ?? '';
-          UserStore.username = data['username'] ?? '';
-          UserStore.email = data['email'] ?? '';
-          UserStore.phone = data['phone'] ?? '';
-          UserStore.birthday = data['birthday'] ?? '';
-          UserStore.isLoggedIn = true;
-        }
-      }
-
-      return user;
+      await _loadUserData(cred.user);
+      return cred.user;
     } catch (e) {
       debugPrint("Login error: $e");
       return null;
     }
   }
 
-  /// =========================
-  /// GOOGLE LOGIN
-  /// =========================
+  /// ================= GOOGLE LOGIN =================
   Future<User?> signInWithGoogle() async {
     try {
-      await _googleSignIn.signOut();
-
-      final googleUser = await _googleSignIn.signIn();
+      await _google.signOut();
+      final googleUser = await _google.signIn();
       if (googleUser == null) return null;
 
       final googleAuth = await googleUser.authentication;
@@ -104,51 +76,71 @@ class FirebaseService {
       );
 
       final cred = await _auth.signInWithCredential(credential);
-      final user = cred.user;
+      final user = cred.user!;
+      final ref = _db.collection('users').doc(user.uid);
 
-      if (user != null) {
-        final ref = _db.collection('users').doc(user.uid);
-        final doc = await ref.get();
-
-        if (!doc.exists) {
-          await ref.set({
-            'name': user.displayName ?? '',
-            'username': '',
-            'email': user.email ?? '',
-            'phone': '',
-            'birthday': '',
-            'favorites': [],
-            'downloads': [],
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-        }
-
-        final data = (await ref.get()).data()!;
-
-        UserStore.uid = user.uid;
-        UserStore.name = data['name'] ?? '';
-        UserStore.username = data['username'] ?? '';
-        UserStore.email = data['email'] ?? '';
-        UserStore.phone = data['phone'] ?? '';
-        UserStore.birthday = data['birthday'] ?? '';
-        UserStore.isLoggedIn = true;
+      if (!(await ref.get()).exists) {
+        await ref.set({
+          'name': user.displayName ?? '',
+          'username': '',
+          'email': user.email ?? '',
+          'phone': '',
+          'birthday': '',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
       }
 
+      await _loadUserData(user);
       return user;
     } catch (e) {
-      debugPrint("Google login error: $e");
+      debugPrint(" Google login error: $e");
       return null;
     }
   }
 
-  /// =========================
-  /// LOGOUT
-  /// =========================
-  Future<void> signOut() async {
-    await _auth.signOut();
-    await _googleSignIn.signOut();
-    UserStore.clear();
+  /// ================= LOAD USER =================
+  Future<void> _loadUserData(User? user) async {
+    if (user == null) return;
+
+    final doc = await _db.collection('users').doc(user.uid).get();
+    if (!doc.exists) return;
+
+    final data = doc.data()!;
+
+    UserStore.uid = user.uid;
+    UserStore.name = data['name'] ?? '';
+    UserStore.username = data['username'] ?? '';
+    UserStore.email = data['email'] ?? '';
+    UserStore.phone = data['phone'] ?? '';
+    UserStore.birthday = data['birthday'] ?? '';
+
+
+    UserStore.isLoggedIn = true;
   }
 
-  User? get currentUser => _auth.currentUser;
+  List<Song> _parseSongs(dynamic raw) {
+    if (raw == null) return [];
+    return List<Map<String, dynamic>>.from(raw)
+        .map((e) => Song.fromMap(e))
+        .toList();
+  }
+
+
+
+
+
+  bool _isReady() {
+    if (UserStore.uid == null || UserStore.uid!.isEmpty) {
+      debugPrint(" User not logged in");
+      return false;
+    }
+    return true;
+  }
+
+  /// ================= LOGOUT =================
+  Future<void> signOut() async {
+    await _auth.signOut();
+    await _google.signOut();
+    UserStore.clear();
+  }
 }

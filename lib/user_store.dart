@@ -1,3 +1,4 @@
+
 class UserStore {
   static String uid = '';
 
@@ -6,17 +7,21 @@ class UserStore {
   static String email = '';
   static String phone = '';
   static String birthday = '';
-  static String password = '';
+
+
 
   static bool isLoggedIn = false;
 
   static void clear() {
     uid = '';
     name = '';
+    username = '';
     email = '';
     phone = '';
     birthday = '';
-    password = '';
+
+
+
     isLoggedIn = false;
   }
 }

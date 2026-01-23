@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../models/song.dart';
 import '../home/artist_detail_screen.dart';
 
@@ -10,6 +13,9 @@ class DownloadScreen extends StatefulWidget {
 }
 
 class _DownloadScreenState extends State<DownloadScreen> {
+  final _firestore = FirebaseFirestore.instance;
+  final _uid = FirebaseAuth.instance.currentUser!.uid;
+
   @override
   Widget build(BuildContext context) {
     final songs = MusicStore.downloadedSongs;
@@ -46,8 +52,14 @@ class _DownloadScreenState extends State<DownloadScreen> {
   // ================= ITEM =================
   Widget _songItem(BuildContext context, Song song, int index) {
     return InkWell(
-      onTap: () {
+      onTap: () async {
+        // ===== GIỮ NGUYÊN LOGIC CŨ =====
         MusicStore.addRecent(song);
+
+        // ===== THÊM LƯU RECENT LÊN FIREBASE =====
+        await _firestore.collection('users').doc(_uid).update({
+          'recent': FieldValue.arrayUnion([_songToMap(song)])
+        });
 
         Navigator.push(
           context,
@@ -93,15 +105,19 @@ class _DownloadScreenState extends State<DownloadScreen> {
               ),
             ),
 
-            // 🔥 NÚT XOÁ FILE ĐÃ TẢI
+            // 🔥 XOÁ DOWNLOAD (LOCAL + FIREBASE)
             IconButton(
               icon: const Icon(
                 Icons.delete_outline,
                 color: Colors.redAccent,
               ),
-              onPressed: () {
+              onPressed: () async {
                 setState(() {
                   MusicStore.downloadedSongs.removeAt(index);
+                });
+
+                await _firestore.collection('users').doc(_uid).update({
+                  'downloads': FieldValue.arrayRemove([_songToMap(song)])
                 });
               },
             ),
@@ -109,5 +125,16 @@ class _DownloadScreenState extends State<DownloadScreen> {
         ),
       ),
     );
+  }
+
+  // ===== CHUYỂN SONG → MAP =====
+  Map<String, dynamic> _songToMap(Song song) {
+    return {
+      'title': song.title,
+      'artist': song.artist,
+      'filePath': song.filePath,
+      'duration': song.duration,
+      'artistImage': song.artistImage,
+    };
   }
 }

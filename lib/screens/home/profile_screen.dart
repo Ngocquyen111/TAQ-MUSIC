@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../user_store.dart';
 import 'edit_profile_screen.dart';
 
@@ -15,17 +17,44 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   File? _avatarImage;
   final ImagePicker _picker = ImagePicker();
-
   static const String _avatarKey = 'user_avatar_path';
 
   bool _showPassword = false;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
     _loadAvatar();
+    _loadUserFromFirebase(); // 🔥 LẤY DATA TỪ FIREBASE
   }
 
+  /// ================= LOAD USER FROM FIRESTORE =================
+  Future<void> _loadUserFromFirebase() async {
+    if (UserStore.uid.isEmpty) return;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(UserStore.uid)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data()!;
+        UserStore.name = data['name'] ?? '';
+        UserStore.username = data['username'] ?? '';
+        UserStore.email = data['email'] ?? '';
+        UserStore.phone = data['phone'] ?? '';
+        UserStore.birthday = data['birthday'] ?? '';
+      }
+    } catch (e) {
+      debugPrint("Load profile error: $e");
+    }
+
+    setState(() => _loading = false);
+  }
+
+  /// ================= AVATAR LOCAL =================
   Future<void> _loadAvatar() async {
     final prefs = await SharedPreferences.getInstance();
     final path = prefs.getString(_avatarKey);
@@ -52,6 +81,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0F0F0F),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.pinkAccent),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
       appBar: AppBar(
@@ -72,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
               if (updated == true) {
-                setState(() {});
+                await _loadUserFromFirebase(); // 🔥 LOAD LẠI SAU KHI EDIT
               }
             },
           )
@@ -140,44 +178,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 32),
 
-          // ================= INFO CARD =================
           _infoCard(
             icon: Icons.person,
             label: "Họ và tên",
             value: UserStore.name,
           ),
-
           _infoCard(
             icon: Icons.account_circle,
             label: "Username",
             value: UserStore.username,
           ),
-
           _infoCard(
             icon: Icons.email,
             label: "Email",
             value: UserStore.email,
           ),
-
           _infoCard(
             icon: Icons.phone,
             label: "Số điện thoại",
             value: UserStore.phone,
           ),
-
           _infoCard(
             icon: Icons.cake,
             label: "Ngày sinh",
             value: UserStore.birthday,
           ),
-
-
         ],
       ),
     );
   }
 
-  // ================= INFO CARD =================
   Widget _infoCard({
     required IconData icon,
     required String label,
@@ -216,56 +246,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-          )
-        ],
-      ),
-    );
-  }
-
-  // ================= PASSWORD CARD =================
-  Widget _passwordCard() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1C),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          _iconBox(Icons.lock),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Mật khẩu",
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _showPassword ? UserStore.password : "******",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: Icon(
-              _showPassword ? Icons.visibility : Icons.visibility_off,
-              color: Colors.white54,
-            ),
-            onPressed: () {
-              setState(() => _showPassword = !_showPassword);
-            },
           )
         ],
       ),
