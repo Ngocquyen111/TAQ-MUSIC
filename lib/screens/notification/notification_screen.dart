@@ -26,20 +26,19 @@ class NotificationScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           _sectionTitle("Mới nhất"),
-
           const SizedBox(height: 12),
 
           _notificationItem(
-            image: "assets/noti1.jpg",
+            image: "assets/images/noti/1.jpg",
             title: "Phát hành mới",
             desc:
             "The Lizards x Shanti Album mới của Toàn Shanti đã phát hành. Nghe ngay!",
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           _notificationItem(
-            image: "assets/noti2.jpg",
+            image: "assets/images/noti/2.jpg",
             title: "Playlist đã được",
             desc:
             "Mới phát hành cho những chuyến đi mùa hè cùng các bản hit nghe mãi.",
@@ -48,11 +47,10 @@ class NotificationScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           _sectionTitle("Trước đó"),
-
           const SizedBox(height: 12),
 
           _notificationItem(
-            image: "assets/noti3.jpg",
+            image: "assets/images/noti/3.jpg",
             title: "Cập nhật nghệ sĩ",
             desc:
             "Toàn LALA vừa chia sẻ Album mới. Xem ngay để không bỏ lỡ!",
@@ -94,44 +92,48 @@ class NotificationScreen extends StatelessWidget {
     required String desc,
     bool isCircle = false,
   }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(isCircle ? 30 : 8),
-          child: Image.asset(
-            image,
-            width: 56,
-            height: 56,
-            fit: BoxFit.cover,
+    return Card(
+      color: Colors.transparent,
+      elevation: 0,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(isCircle ? 28 : 8),
+            child: Image.asset(
+              image,
+              width: 56,
+              height: 56,
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                desc,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  height: 1.3,
+                const SizedBox(height: 4),
+                Text(
+                  desc,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    height: 1.3,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
