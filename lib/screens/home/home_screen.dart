@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../services/music_service.dart';
@@ -14,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final MusicService _musicService = MusicService();
+
+  bool _isLoading = true;
 
   // ================== DATA ==================
 
@@ -56,15 +59,25 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  // ================== PLAYER ==================
+  // ================== INIT ==================
 
   @override
   void initState() {
     super.initState();
+
     _musicService.onPlayerStateChanged.listen((_) {
       if (mounted) setState(() {});
     });
+
+    // giả lập loading khi login vào home
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    });
   }
+
+  // ================== PLAYER ==================
 
   void _playSong(Song song) async {
     await _musicService.play(song.filePath);
@@ -81,166 +94,237 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // ================= HEADER =================
-          Row(
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(20),
+      child: _isLoading ? _buildSkeleton() : _buildContent(),
+    );
+  }
+
+  // ================== REAL CONTENT ==================
+
+  Widget _buildContent() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // HEADER
+        Row(
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ProfileScreen(),
+                  ),
+                );
+              },
+              child: const CircleAvatar(
+                radius: 18,
+                backgroundColor: Colors.orange,
+                child: Icon(Icons.music_note, color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            _chip("Tất cả", active: true),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        const Text(
+          "Dành cho bạn",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // MINI SONGS
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _songs.length > 4 ? 4 : _songs.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 3.2,
+          ),
+          itemBuilder: (context, index) {
+            return _miniItem(_songs[index]);
+          },
+        ),
+
+        const SizedBox(height: 28),
+
+        const Text(
+          "Nghệ sĩ nổi bật",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        SizedBox(
+          height: 230,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _artists.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final artist = _artists[index];
+              return InkWell(
+                borderRadius: BorderRadius.circular(24),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const ProfileScreen(),
+                      builder: (_) => ArtistDetailScreen(
+                        artistName: artist["name"]!,
+                        artistImage: artist["image"]!,
+                      ),
                     ),
                   );
                 },
-                child: const CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.orange,
-                  child: Icon(Icons.music_note, color: Colors.white),
-                ),
-              ),
-              const SizedBox(width: 12),
-              _chip("Tất cả", active: true),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          const Text(
-            "Dành cho bạn",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // ================= MINI SONGS =================
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _songs.length > 4 ? 4 : _songs.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 3.2,
-            ),
-            itemBuilder: (context, index) {
-              return _miniItem(_songs[index]);
-            },
-          ),
-
-          const SizedBox(height: 28),
-
-          // ================= ARTISTS =================
-          const Text(
-            "Nghệ sĩ nổi bật",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          SizedBox(
-            height: 230,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _artists.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 16),
-              itemBuilder: (context, index) {
-                final artist = _artists[index];
-
-                return InkWell(
-                  borderRadius: BorderRadius.circular(24),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ArtistDetailScreen(
-                          artistName: artist["name"]!,
-                          artistImage: artist["image"]!,
+                child: Container(
+                  width: 170,
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
+                          child: Image.asset(
+                            artist["image"]!,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
-                    );
-                  },
-                  child: Container(
-                    width: 170,
-                    decoration: BoxDecoration(
-                      color: AppColors.card,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(24),
-                            ),
-                            child: Image.asset(
-                              artist["image"]!,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          artist["name"]!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Text(
-                            artist["name"]!,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
+                      )
+                    ],
                   ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 28),
-
-          // ================= RANKING =================
-          const Text(
-            "Bảng xếp hạng",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _songs.length,
-            itemBuilder: (context, index) {
-              return _songItem(_songs[index], index + 1);
+                ),
+              );
             },
           ),
-        ],
+        ),
+
+        const SizedBox(height: 28),
+
+        const Text(
+          "Danh sách bài hát",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _songs.length,
+          itemBuilder: (context, index) {
+            return _songItem(_songs[index], index + 1);
+          },
+        ),
+      ],
+    );
+  }
+
+  // ================== SKELETON ==================
+
+  Widget _buildSkeleton() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _skeletonBox(height: 36, width: 120),
+        const SizedBox(height: 20),
+
+        _skeletonBox(height: 26, width: 160),
+        const SizedBox(height: 12),
+
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: 4,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 3.2,
+          ),
+          itemBuilder: (_, __) => _skeletonBox(height: 50),
+        ),
+
+        const SizedBox(height: 28),
+
+        _skeletonBox(height: 24, width: 180),
+        const SizedBox(height: 12),
+
+        SizedBox(
+          height: 230,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (_, __) => _skeletonBox(width: 170),
+          ),
+        ),
+
+        const SizedBox(height: 28),
+
+        ...List.generate(
+          4,
+              (_) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _skeletonBox(height: 56),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _skeletonBox({double height = 20, double? width}) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 600),
+      opacity: 0.6,
+      child: Container(
+        height: height,
+        width: width,
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
 
-  // ================= COMPONENTS =================
+  // ================== COMPONENTS ==================
 
   Widget _chip(String text, {bool active = false}) {
     return Container(
@@ -256,7 +340,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ✅ MINI ITEM – HIỂN THỊ ẢNH NGHỆ SĨ
   Widget _miniItem(Song song) {
     final isPlaying = _isPlaying(song.filePath);
 
@@ -280,13 +363,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 36,
                 height: 36,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) {
-                  return const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.pinkAccent,
-                    child: Icon(Icons.person, color: Colors.white),
-                  );
-                },
               ),
             ),
             const SizedBox(width: 8),
@@ -313,8 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: isPlaying ? Colors.pinkAccent : AppColors.card,
         child: Text('$index', style: const TextStyle(color: Colors.white)),
       ),
-      title:
-      Text(song.title, style: const TextStyle(color: Colors.white)),
+      title: Text(song.title, style: const TextStyle(color: Colors.white)),
       subtitle:
       Text(song.artist, style: const TextStyle(color: Colors.white54)),
       trailing: Icon(

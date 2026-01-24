@@ -30,7 +30,7 @@ class NotificationScreen extends StatelessWidget {
           const SizedBox(height: 12),
 
           _notificationItem(
-            image: "assets/noti1.jpg",
+            image: "assets/images/noti/1.jpg",
             title: "Phát hành mới",
             desc:
             "The Lizards x Shanti Album mới của Toàn Shanti đã phát hành. Nghe ngay!",
@@ -39,7 +39,7 @@ class NotificationScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           _notificationItem(
-            image: "assets/noti2.jpg",
+            image: "assets/images/noti/2.jpg",
             title: "Playlist đã được",
             desc:
             "Mới phát hành cho những chuyến đi mùa hè cùng các bản hit nghe mãi.",
@@ -52,7 +52,7 @@ class NotificationScreen extends StatelessWidget {
           const SizedBox(height: 12),
 
           _notificationItem(
-            image: "assets/noti3.jpg",
+            image: "assets/images/noti/3.jpg",
             title: "Cập nhật nghệ sĩ",
             desc:
             "Toàn LALA vừa chia sẻ Album mới. Xem ngay để không bỏ lỡ!",
