@@ -15,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final MusicService _musicService = MusicService();
-
   bool _isLoading = true;
 
   // ================== DATA ==================
@@ -69,7 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) setState(() {});
     });
 
-    // giả lập loading khi login vào home
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -77,10 +75,19 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // ================== PLAYER ==================
+  // ================== PLAYER (FIX PAUSE Ở ĐÂY) ==================
 
   void _playSong(Song song) async {
-    await _musicService.play(song.filePath);
+    // 🔥 nếu đang phát đúng bài → pause
+    if (_musicService.currentSongPath == song.filePath &&
+        _musicService.isPlaying) {
+      await _musicService.pause();
+    }
+    // 🔥 còn lại → play
+    else {
+      await _musicService.play(song.filePath);
+    }
+
     setState(() {});
   }
 
@@ -104,7 +111,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // HEADER
         Row(
           children: [
             InkWell(
@@ -141,7 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
         const SizedBox(height: 12),
 
-        // MINI SONGS
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -264,10 +269,8 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         _skeletonBox(height: 36, width: 120),
         const SizedBox(height: 20),
-
         _skeletonBox(height: 26, width: 160),
         const SizedBox(height: 12),
-
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -280,46 +283,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           itemBuilder: (_, __) => _skeletonBox(height: 50),
         ),
-
-        const SizedBox(height: 28),
-
-        _skeletonBox(height: 24, width: 180),
-        const SizedBox(height: 12),
-
-        SizedBox(
-          height: 230,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: 3,
-            separatorBuilder: (_, __) => const SizedBox(width: 16),
-            itemBuilder: (_, __) => _skeletonBox(width: 170),
-          ),
-        ),
-
-        const SizedBox(height: 28),
-
-        ...List.generate(
-          4,
-              (_) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _skeletonBox(height: 56),
-          ),
-        ),
       ],
     );
   }
 
   Widget _skeletonBox({double height = 20, double? width}) {
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 600),
-      opacity: 0.6,
-      child: Container(
-        height: height,
-        width: width,
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(12),
-        ),
+    return Container(
+      height: height,
+      width: width,
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(12),
       ),
     );
   }
