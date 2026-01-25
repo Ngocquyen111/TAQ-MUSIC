@@ -3,6 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../data/music_data.dart';
 import '../../models/song.dart';
 import '../../services/music_service.dart';
+import '../../data/local_music_store.dart';
 
 class SearchScreen extends StatefulWidget {
   final ValueChanged<Song> onSongSelected;
@@ -46,9 +47,12 @@ class _SearchScreenState extends State<SearchScreen> {
         _musicService.isPlaying;
   }
 
-  // ================= 🔥 PLAY (FIX) =================
+  // =================  PLAY =================
 
   void _handleSongTap(Song song) async {
+
+    LocalMusicStore.addRecent(song);
+
     if (_musicService.currentSong?.filePath == song.filePath) {
       if (_musicService.isPlaying) {
         await _musicService.pause();
@@ -56,9 +60,8 @@ class _SearchScreenState extends State<SearchScreen> {
         await _musicService.resume();
       }
     } else {
-      // 🔥 CHUẨN: dùng playSong để đồng bộ MiniPlayer
+
       await _musicService.playSong(song);
-      widget.onSongSelected(song);
 
       if (!_recentSearches.contains(song)) {
         _recentSearches.insert(0, song);
@@ -189,8 +192,9 @@ class _SearchScreenState extends State<SearchScreen> {
               const Text("Kết quả",
                   style: TextStyle(color: Colors.white)),
               const SizedBox(height: 8),
-              ..._results.map((s) =>
-                  _buildSongItem(s, _isPlaying(s))),
+              ..._results.map(
+                    (s) => _buildSongItem(s, _isPlaying(s)),
+              ),
             ],
 
             if (_searchCtrl.text.isEmpty &&

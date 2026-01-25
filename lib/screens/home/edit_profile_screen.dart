@@ -170,7 +170,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      // ✅ Update local store
+      //  Update local store
       UserStore.name = nameCtrl.text.trim();
       UserStore.phone = phoneCtrl.text.trim();
       UserStore.birthday = birthdayCtrl.text.trim();

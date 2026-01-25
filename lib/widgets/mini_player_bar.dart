@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/music_service.dart';
 import '../models/song.dart';
 import '../data/local_music_store.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class MiniPlayerBar extends StatefulWidget {
   const MiniPlayerBar({super.key});
@@ -20,7 +21,8 @@ class _MiniPlayerBarState extends State<MiniPlayerBar> {
   void initState() {
     super.initState();
 
-    _musicService.onPlayerStateChanged.listen((_) {
+
+    _musicService.audioPlayer.onPlayerStateChanged.listen((state) {
       if (!mounted) return;
 
       final song = _musicService.currentSong;

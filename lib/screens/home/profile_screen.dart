@@ -26,7 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadAvatar();
-    _loadUserFromFirebase(); // 🔥 LẤY DATA TỪ FIREBASE
+    _loadUserFromFirebase();
   }
 
   /// ================= LOAD USER FROM FIRESTORE =================
@@ -110,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
               if (updated == true) {
-                await _loadUserFromFirebase(); // 🔥 LOAD LẠI SAU KHI EDIT
+                await _loadUserFromFirebase();
               }
             },
           )

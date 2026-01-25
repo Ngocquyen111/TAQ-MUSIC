@@ -17,7 +17,7 @@ class _MainScreenState extends State<MainScreen> {
   int index = 0;
   final MusicService _musicService = MusicService();
 
-  // ▶️ PHÁT NHẠC (GỌI QUA SERVICE)
+
   void _playSong(Song song) async {
     await _musicService.playSong(song);
     setState(() {}); // rebuild để hiện MiniPlayer
@@ -36,7 +36,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: pages[index],
 
-      // 🎵 MINI PLAYER (TỰ LẤY currentSong)
+      // MINI PLAYER
       bottomSheet: _musicService.currentSong != null
           ? const MiniPlayerBar()
           : null,

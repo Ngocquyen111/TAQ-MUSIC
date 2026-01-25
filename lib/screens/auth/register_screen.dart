@@ -30,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void initState() {
     super.initState();
 
-    /// 🔥 FIX QUAN TRỌNG NHẤT
+
     usernameCtrl.addListener(_onUsernameChanged);
 
     passCtrl.addListener(_checkPasswordMatch);

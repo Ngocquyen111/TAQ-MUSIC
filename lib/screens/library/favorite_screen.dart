@@ -19,7 +19,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ ĐỌC ĐÚNG STORE
+
     final songs = LocalMusicStore.favoriteSongs;
 
     return Scaffold(
@@ -54,7 +54,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   Widget _songItem(BuildContext context, Song song, int index) {
     return InkWell(
       onTap: () async {
-        // ✅ GIỮ LOGIC CŨ
+
         LocalMusicStore.addRecent(song);
 
         await _firestore.collection('users').doc(_uid).update({
@@ -104,7 +104,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               ),
             ),
 
-            // 💔 XOÁ YÊU THÍCH
+            //  XOÁ YÊU THÍCH
             IconButton(
               icon: const Icon(
                 Icons.heart_broken,

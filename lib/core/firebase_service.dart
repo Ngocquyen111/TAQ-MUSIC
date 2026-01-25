@@ -34,16 +34,16 @@ class FirebaseService {
     required String password,
   }) async {
     try {
-      // 1️⃣ check username tồn tại (Firestore)
+      // check username tồn tại (Firestore)
       final exists = await isUsernameExists(username);
       if (exists) {
         throw 'USERNAME_EXISTS';
       }
 
-      // 2️⃣ tạo email ảo
+      // tạo email ảo
       final email = '$username@taqmusic.com';
 
-      // 3️⃣ tạo user Firebase Auth
+      // tạo user Firebase Auth
       final cred = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -52,7 +52,7 @@ class FirebaseService {
       final user = cred.user;
       if (user == null) return null;
 
-      // 4️⃣ lưu user Firestore
+      //  lưu user Firestore
       await _db.collection('users').doc(user.uid).set({
         'name': name,
         'username': username,
@@ -69,7 +69,7 @@ class FirebaseService {
       rethrow;
     } catch (e) {
       debugPrint('Register error: $e');
-      rethrow; // ⚠️ BẮT BUỘC để UI xử lý USERNAME_EXISTS
+      rethrow;
     }
   }
 

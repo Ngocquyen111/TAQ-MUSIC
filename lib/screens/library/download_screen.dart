@@ -19,7 +19,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ ĐỌC ĐÚNG STORE
+
     final songs = LocalMusicStore.downloadedSongs;
 
     return Scaffold(
@@ -55,7 +55,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
   Widget _songItem(BuildContext context, Song song, int index) {
     return InkWell(
       onTap: () async {
-        // ✅ GIỮ NGUYÊN LOGIC
+
         LocalMusicStore.addRecent(song);
 
         await _firestore.collection('users').doc(_uid).update({
@@ -105,7 +105,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
               ),
             ),
 
-            // ✅ XOÁ DOWNLOAD
+            // XOÁ DOWNLOAD
             IconButton(
               icon: const Icon(
                 Icons.delete_outline,

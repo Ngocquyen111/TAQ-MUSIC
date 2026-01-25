@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../services/music_service.dart';
 import '../../models/song.dart';
+import '../../data/local_music_store.dart';
 import 'artist_detail_screen.dart';
 import 'profile_screen.dart';
 
@@ -71,9 +72,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // ================== PLAYER (🔥 FIX) ==================
+
 
   void _playSong(Song song) async {
+
+    LocalMusicStore.addRecent(song);
+
     if (_musicService.currentSong?.filePath == song.filePath) {
       if (_musicService.isPlaying) {
         await _musicService.pause();
@@ -81,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
         await _musicService.resume();
       }
     } else {
-      // 🔥 BẮT BUỘC dùng playSong để đồng bộ MiniPlayer
+
       await _musicService.playSong(song);
     }
     setState(() {});
