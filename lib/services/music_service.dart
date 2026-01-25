@@ -17,20 +17,22 @@ class MusicService {
   bool get isPlaying => _isPlaying;
   String? get currentSongPath => _currentSongPath;
 
-  // ================== PLAY ==================
+  // ================== PLAY (FIX DUY NHẤT Ở ĐÂY) ==================
   Future<void> play(String songPath) async {
     try {
-      // 🔥 nếu đang pause cùng bài → resume
-      if (_currentSongPath == songPath && !_isPlaying) {
-        await resume();
+      // 🔥 cùng bài
+      if (_currentSongPath == songPath) {
+        if (_isPlaying) {
+          await pause(); // toggle → pause
+        } else {
+          await resume(); // toggle → resume
+        }
         return;
       }
 
-      // 🔥 nếu đổi bài → stop bài cũ
-      if (_currentSongPath != songPath) {
-        await _audioPlayer.stop();
-        _currentSongPath = songPath;
-      }
+      // 🔥 khác bài → play mới
+      await _audioPlayer.stop();
+      _currentSongPath = songPath;
 
       if (songPath.startsWith('http')) {
         await _audioPlayer.play(UrlSource(songPath));
