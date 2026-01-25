@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/song.dart';
+import '../../data/local_music_store.dart';
 import '../home/artist_detail_screen.dart';
 
 class DownloadScreen extends StatefulWidget {
@@ -18,7 +19,8 @@ class _DownloadScreenState extends State<DownloadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final songs = MusicStore.downloadedSongs;
+    // ✅ ĐỌC ĐÚNG STORE
+    final songs = LocalMusicStore.downloadedSongs;
 
     return Scaffold(
       backgroundColor: const Color(0xFF4A0000),
@@ -53,10 +55,9 @@ class _DownloadScreenState extends State<DownloadScreen> {
   Widget _songItem(BuildContext context, Song song, int index) {
     return InkWell(
       onTap: () async {
-        // ===== GIỮ NGUYÊN LOGIC CŨ =====
-        MusicStore.addRecent(song);
+        // ✅ GIỮ NGUYÊN LOGIC
+        LocalMusicStore.addRecent(song);
 
-        // ===== THÊM LƯU RECENT LÊN FIREBASE =====
         await _firestore.collection('users').doc(_uid).update({
           'recent': FieldValue.arrayUnion([_songToMap(song)])
         });
@@ -82,7 +83,6 @@ class _DownloadScreenState extends State<DownloadScreen> {
             ),
             const SizedBox(width: 12),
 
-            // ===== TEXT =====
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +105,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
               ),
             ),
 
-            // 🔥 XOÁ DOWNLOAD (LOCAL + FIREBASE)
+            // ✅ XOÁ DOWNLOAD
             IconButton(
               icon: const Icon(
                 Icons.delete_outline,
@@ -113,7 +113,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
               ),
               onPressed: () async {
                 setState(() {
-                  MusicStore.downloadedSongs.removeAt(index);
+                  LocalMusicStore.downloadedSongs.removeAt(index);
                 });
 
                 await _firestore.collection('users').doc(_uid).update({
@@ -127,7 +127,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
     );
   }
 
-  // ===== CHUYỂN SONG → MAP =====
+  // ===== SONG → MAP =====
   Map<String, dynamic> _songToMap(Song song) {
     return {
       'title': song.title,

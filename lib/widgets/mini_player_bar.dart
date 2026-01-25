@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import '../models/song.dart';
 import '../services/music_service.dart';
+import '../models/song.dart';
+import '../data/local_music_store.dart';
 
 class MiniPlayerBar extends StatefulWidget {
-  final Song song;
-
-  const MiniPlayerBar({super.key, required this.song});
+  const MiniPlayerBar({super.key});
 
   @override
   State<MiniPlayerBar> createState() => _MiniPlayerBarState();
@@ -13,38 +12,46 @@ class MiniPlayerBar extends StatefulWidget {
 
 class _MiniPlayerBarState extends State<MiniPlayerBar> {
   final MusicService _musicService = MusicService();
+
   bool isFavorite = false;
   bool isDownloaded = false;
 
   @override
   void initState() {
     super.initState();
-    // ✅ Lắng nghe thay đổi trạng thái player
+
     _musicService.onPlayerStateChanged.listen((_) {
-      if (mounted) setState(() {});
+      if (!mounted) return;
+
+      final song = _musicService.currentSong;
+      if (song != null) {
+        isFavorite = LocalMusicStore.favoriteSongs
+            .any((s) => s.filePath == song.filePath);
+
+        isDownloaded = LocalMusicStore.downloadedSongs
+            .any((s) => s.filePath == song.filePath);
+      }
+
+      setState(() {});
     });
   }
 
-  // ✅ XỬ LÝ PAUSE/RESUME
   void _togglePlayPause() async {
-    if (_musicService.currentSongPath == widget.song.filePath) {
-      if (_musicService.isPlaying) {
-        await _musicService.pause();
-      } else {
-        await _musicService.resume();
-      }
+    if (_musicService.isPlaying) {
+      await _musicService.pause();
     } else {
-      await _musicService.play(widget.song.filePath);
+      await _musicService.resume();
     }
-    // ✅ QUAN TRỌNG: Force update UI
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Lấy trạng thái thật từ MusicService
-    final isPlaying = _musicService.currentSongPath == widget.song.filePath &&
-        _musicService.isPlaying;
+    final Song? song = _musicService.currentSong;
+
+    if (song == null) return const SizedBox.shrink();
+
+    final isPlaying = _musicService.isPlaying;
 
     return Container(
       height: 56,
@@ -64,7 +71,7 @@ class _MiniPlayerBarState extends State<MiniPlayerBar> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.song.title,
+                  song.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -73,7 +80,7 @@ class _MiniPlayerBarState extends State<MiniPlayerBar> {
                   ),
                 ),
                 Text(
-                  widget.song.artist,
+                  song.artist,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -90,7 +97,16 @@ class _MiniPlayerBarState extends State<MiniPlayerBar> {
               isFavorite ? Icons.favorite : Icons.favorite_border,
               color: isFavorite ? Colors.pink : Colors.white,
             ),
-            onPressed: () => setState(() => isFavorite = !isFavorite),
+            onPressed: () {
+              setState(() {
+                if (isFavorite) {
+                  LocalMusicStore.removeFavorite(song);
+                } else {
+                  LocalMusicStore.addFavorite(song);
+                }
+                isFavorite = !isFavorite;
+              });
+            },
           ),
 
           IconButton(
@@ -98,10 +114,18 @@ class _MiniPlayerBarState extends State<MiniPlayerBar> {
               isDownloaded ? Icons.download_done : Icons.download,
               color: isDownloaded ? Colors.green : Colors.white,
             ),
-            onPressed: () => setState(() => isDownloaded = true),
+            onPressed: () {
+              setState(() {
+                if (isDownloaded) {
+                  LocalMusicStore.removeDownload(song);
+                } else {
+                  LocalMusicStore.addDownload(song);
+                }
+                isDownloaded = !isDownloaded;
+              });
+            },
           ),
 
-          // ✅ NÚT PLAY/PAUSE ĐỒNG BỘ
           IconButton(
             icon: Icon(
               isPlaying ? Icons.pause : Icons.play_arrow,

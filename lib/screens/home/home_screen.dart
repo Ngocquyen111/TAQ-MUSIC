@@ -64,10 +64,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    _musicService.onPlayerStateChanged.listen((_) {
-      if (mounted) setState(() {});
-    });
-
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -75,24 +71,24 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // ================== PLAYER (FIX PAUSE Ở ĐÂY) ==================
+  // ================== PLAYER (🔥 FIX) ==================
 
   void _playSong(Song song) async {
-    // 🔥 nếu đang phát đúng bài → pause
-    if (_musicService.currentSongPath == song.filePath &&
-        _musicService.isPlaying) {
-      await _musicService.pause();
+    if (_musicService.currentSong?.filePath == song.filePath) {
+      if (_musicService.isPlaying) {
+        await _musicService.pause();
+      } else {
+        await _musicService.resume();
+      }
+    } else {
+      // 🔥 BẮT BUỘC dùng playSong để đồng bộ MiniPlayer
+      await _musicService.playSong(song);
     }
-    // 🔥 còn lại → play
-    else {
-      await _musicService.play(song.filePath);
-    }
-
     setState(() {});
   }
 
   bool _isPlaying(String filePath) {
-    return _musicService.currentSongPath == filePath &&
+    return _musicService.currentSong?.filePath == filePath &&
         _musicService.isPlaying;
   }
 

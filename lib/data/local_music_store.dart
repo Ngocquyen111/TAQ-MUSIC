@@ -12,6 +12,11 @@ class LocalMusicStore {
     }
   }
 
+  // ✅ THÊM: xoá download (để toggle đúng)
+  static void removeDownload(Song song) {
+    downloadedSongs.removeWhere((s) => s.filePath == song.filePath);
+  }
+
   // ===== FAVORITE =====
   static void addFavorite(Song song) {
     if (!favoriteSongs.any((s) => s.filePath == song.filePath)) {

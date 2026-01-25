@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/song.dart';
+import '../../data/local_music_store.dart';
 import '../home/artist_detail_screen.dart';
 
 class FavoriteScreen extends StatefulWidget {
@@ -18,7 +19,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final songs = MusicStore.favoriteSongs;
+    // ✅ ĐỌC ĐÚNG STORE
+    final songs = LocalMusicStore.favoriteSongs;
 
     return Scaffold(
       backgroundColor: const Color(0xFF4A0000),
@@ -52,10 +54,9 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   Widget _songItem(BuildContext context, Song song, int index) {
     return InkWell(
       onTap: () async {
-        // ===== GIỮ LOGIC CŨ =====
-        MusicStore.addRecent(song);
+        // ✅ GIỮ LOGIC CŨ
+        LocalMusicStore.addRecent(song);
 
-        // ===== LƯU RECENT LÊN FIREBASE =====
         await _firestore.collection('users').doc(_uid).update({
           'recent': FieldValue.arrayUnion([_songToMap(song)])
         });
@@ -81,7 +82,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             ),
             const SizedBox(width: 12),
 
-            // ===== TEXT =====
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +104,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               ),
             ),
 
-            // 💔 XOÁ YÊU THÍCH (LOCAL + FIREBASE)
+            // 💔 XOÁ YÊU THÍCH
             IconButton(
               icon: const Icon(
                 Icons.heart_broken,
@@ -112,7 +112,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               ),
               onPressed: () async {
                 setState(() {
-                  MusicStore.favoriteSongs.removeAt(index);
+                  LocalMusicStore.favoriteSongs.removeAt(index);
                 });
 
                 await _firestore.collection('users').doc(_uid).update({

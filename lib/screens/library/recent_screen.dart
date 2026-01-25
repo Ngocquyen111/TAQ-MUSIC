@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/song.dart';
+import '../../data/local_music_store.dart';
 import '../home/artist_detail_screen.dart';
 
 class RecentScreen extends StatelessWidget {
@@ -10,7 +9,8 @@ class RecentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final songs = MusicStore.recentSongs;
+    // ✅ ĐỌC ĐÚNG STORE
+    final songs = LocalMusicStore.recentSongs;
 
     return Scaffold(
       backgroundColor: const Color(0xFF4A0000),
@@ -43,6 +43,17 @@ class RecentScreen extends StatelessWidget {
 
   Widget _songItem(BuildContext context, Song song) {
     return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ArtistDetailScreen(
+              artistName: song.artist,
+              artistImage: "assets/images/artist_placeholder.png",
+            ),
+          ),
+        );
+      },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Row(
@@ -75,6 +86,4 @@ class RecentScreen extends StatelessWidget {
       ),
     );
   }
-
-
 }

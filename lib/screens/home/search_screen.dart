@@ -23,14 +23,6 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Song> _results = [];
   final List<Song> _recentSearches = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _musicService.onPlayerStateChanged.listen((_) {
-      if (mounted) setState(() {});
-    });
-  }
-
   // ================= SEARCH =================
 
   void _onSearch(String keyword) {
@@ -43,23 +35,29 @@ class _SearchScreenState extends State<SearchScreen> {
 
     final songs = MusicData.artists
         .expand((a) => a.songs)
-        .where((s) => s.title.toLowerCase().startsWith(keyword))
+        .where((s) => s.title.toLowerCase().contains(keyword))
         .toList();
 
     setState(() => _results = songs);
   }
 
-  bool _isPlaying(String path) {
-    return _musicService.currentSongPath == path &&
+  bool _isPlaying(Song song) {
+    return _musicService.currentSong?.filePath == song.filePath &&
         _musicService.isPlaying;
   }
 
+  // ================= 🔥 PLAY (FIX) =================
+
   void _handleSongTap(Song song) async {
-    if (_musicService.currentSongPath == song.filePath) {
-      _musicService.isPlaying
-          ? await _musicService.pause()
-          : await _musicService.resume();
+    if (_musicService.currentSong?.filePath == song.filePath) {
+      if (_musicService.isPlaying) {
+        await _musicService.pause();
+      } else {
+        await _musicService.resume();
+      }
     } else {
+      // 🔥 CHUẨN: dùng playSong để đồng bộ MiniPlayer
+      await _musicService.playSong(song);
       widget.onSongSelected(song);
 
       if (!_recentSearches.contains(song)) {
@@ -141,7 +139,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   itemBuilder: (_, i) {
                     final song = songs[i];
                     return _buildSongItem(
-                        song, _isPlaying(song.filePath));
+                        song, _isPlaying(song));
                   },
                 ),
               ),
@@ -186,17 +184,15 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            // ===== SEARCH RESULT =====
             if (_results.isNotEmpty) ...[
               const SizedBox(height: 16),
               const Text("Kết quả",
                   style: TextStyle(color: Colors.white)),
               const SizedBox(height: 8),
               ..._results.map((s) =>
-                  _buildSongItem(s, _isPlaying(s.filePath))),
+                  _buildSongItem(s, _isPlaying(s))),
             ],
 
-            // ===== RECENT SEARCH =====
             if (_searchCtrl.text.isEmpty &&
                 _recentSearches.isNotEmpty) ...[
               const SizedBox(height: 24),
@@ -209,8 +205,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               const SizedBox(height: 8),
               ..._recentSearches.map(
-                    (s) => _buildSongItem(
-                    s, _isPlaying(s.filePath)),
+                    (s) => _buildSongItem(s, _isPlaying(s)),
               ),
             ],
 

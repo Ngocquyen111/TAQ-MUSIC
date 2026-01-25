@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import '../models/song.dart';
 
 class MusicService {
   static final MusicService _instance = MusicService._internal();
@@ -11,26 +12,64 @@ class MusicService {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   String? _currentSongPath;
+  Song? _currentSong; // 🔥 THÊM
   bool _isPlaying = false;
 
   AudioPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _isPlaying;
   String? get currentSongPath => _currentSongPath;
+  Song? get currentSong => _currentSong; // 🔥 THÊM
 
-  // ================== PLAY (FIX DUY NHẤT Ở ĐÂY) ==================
+  // ================== FAVORITE & DOWNLOAD (GIỮ NGUYÊN) ==================
+
+  final List<Song> _favoriteSongs = [];
+  final List<Song> _downloadedSongs = [];
+
+  List<Song> get favoriteSongs => _favoriteSongs;
+  List<Song> get downloadedSongs => _downloadedSongs;
+
+  bool isFavorite(Song song) =>
+      _favoriteSongs.any((s) => s.filePath == song.filePath);
+
+  bool isDownloaded(Song song) =>
+      _downloadedSongs.any((s) => s.filePath == song.filePath);
+
+  void toggleFavorite(Song song) {
+    if (isFavorite(song)) {
+      _favoriteSongs.removeWhere(
+            (s) => s.filePath == song.filePath,
+      );
+    } else {
+      _favoriteSongs.add(song);
+    }
+  }
+
+  void downloadSong(Song song) {
+    if (!isDownloaded(song)) {
+      _downloadedSongs.add(song);
+    }
+  }
+
+  // ================== 🔥 PLAY BẰNG SONG (THÊM) ==================
+  Future<void> playSong(Song song) async {
+    _currentSong = song;
+    await play(song.filePath);
+  }
+
+  // ================== PLAY (GIỮ NGUYÊN) ==================
   Future<void> play(String songPath) async {
     try {
-      // 🔥 cùng bài
+      // 🔁 cùng bài
       if (_currentSongPath == songPath) {
         if (_isPlaying) {
-          await pause(); // toggle → pause
+          await pause();
         } else {
-          await resume(); // toggle → resume
+          await resume();
         }
         return;
       }
 
-      // 🔥 khác bài → play mới
+      // ▶️ khác bài
       await _audioPlayer.stop();
       _currentSongPath = songPath;
 
@@ -47,33 +86,34 @@ class MusicService {
     }
   }
 
-  // ================== PAUSE ==================
+  // ================== PAUSE (GIỮ NGUYÊN) ==================
   Future<void> pause() async {
     await _audioPlayer.pause();
     _isPlaying = false;
   }
 
-  // ================== RESUME ==================
+  // ================== RESUME (GIỮ NGUYÊN) ==================
   Future<void> resume() async {
     await _audioPlayer.resume();
     _isPlaying = true;
   }
 
-  // ================== STOP ==================
+  // ================== STOP (GIỮ NGUYÊN) ==================
   Future<void> stop() async {
     await _audioPlayer.stop();
     _currentSongPath = null;
+    _currentSong = null; // 🔥 THÊM
     _isPlaying = false;
   }
 
-  // ================== LISTEN ==================
+  // ================== LISTEN (GIỮ NGUYÊN) ==================
   void _listenPlayerState() {
     _audioPlayer.onPlayerStateChanged.listen((state) {
       _isPlaying = state == PlayerState.playing;
     });
   }
 
-  // ================== STREAM ==================
+  // ================== STREAM (GIỮ NGUYÊN) ==================
   Stream<Duration> get onPositionChanged =>
       _audioPlayer.onPositionChanged;
 

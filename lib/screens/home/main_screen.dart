@@ -15,28 +15,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int index = 0;
-  Song? currentSong;
   final MusicService _musicService = MusicService();
 
-  @override
-  void initState() {
-    super.initState();
-    _musicService.onPlayerStateChanged.listen((_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  // ✅ ĐƠN GIẢN HÓA - pause/resume xử lý trong MusicService.play()
+  // ▶️ PHÁT NHẠC (GỌI QUA SERVICE)
   void _playSong(Song song) async {
-    await _musicService.play(song.filePath);
-    setState(() {
-      currentSong = song;
-    });
+    await _musicService.playSong(song);
+    setState(() {}); // rebuild để hiện MiniPlayer
   }
 
   @override
@@ -52,8 +36,9 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: pages[index],
 
-      bottomSheet: currentSong != null
-          ? MiniPlayerBar(song: currentSong!)
+      // 🎵 MINI PLAYER (TỰ LẤY currentSong)
+      bottomSheet: _musicService.currentSong != null
+          ? const MiniPlayerBar()
           : null,
 
       bottomNavigationBar: BottomNavigationBar(
@@ -63,9 +48,18 @@ class _MainScreenState extends State<MainScreen> {
         selectedItemColor: Colors.pink,
         unselectedItemColor: Colors.white54,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: '',
+          ),
         ],
       ),
     );
