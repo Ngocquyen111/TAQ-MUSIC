@@ -24,7 +24,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Song> _results = [];
   final List<Song> _recentSearches = [];
 
-  // ================= SEARCH =================
+  // ================= SEARCH (ĐÃ SỬA) =================
 
   void _onSearch(String keyword) {
     keyword = keyword.trim().toLowerCase();
@@ -36,7 +36,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
     final songs = MusicData.artists
         .expand((a) => a.songs)
-        .where((s) => s.title.toLowerCase().contains(keyword))
+        .where((s) =>
+        s.title.toLowerCase().startsWith(keyword))
         .toList();
 
     setState(() => _results = songs);
@@ -47,10 +48,9 @@ class _SearchScreenState extends State<SearchScreen> {
         _musicService.isPlaying;
   }
 
-  // =================  PLAY =================
+  // ================= PLAY =================
 
   void _handleSongTap(Song song) async {
-
     LocalMusicStore.addRecent(song);
 
     if (_musicService.currentSong?.filePath == song.filePath) {
@@ -60,7 +60,6 @@ class _SearchScreenState extends State<SearchScreen> {
         await _musicService.resume();
       }
     } else {
-
       await _musicService.playSong(song);
 
       if (!_recentSearches.contains(song)) {
