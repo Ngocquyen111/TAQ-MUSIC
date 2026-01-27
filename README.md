@@ -35,6 +35,7 @@ Lưu dữ liệu người dùng trên Firebase
 UI hiện đại, tối giản
 
 Trải nghiệm mượt mà trên Android
+
 <img width="392" height="801" alt="image" src="https://github.com/user-attachments/assets/5dcc1ec0-0fa7-4b15-98f2-427f750c3022" />
 
 🛠️ Tech Stack
@@ -49,12 +50,11 @@ Email / Password
 Google Sign-In
 
 Database
-🎶 scan here to Listen 🎶
-![Uploading image.png…]()
-
 
 Cloud Firestore / Firebase Realtime Database
 
 Lưu thông tin người dùng
 
 Lưu danh sách bài hát & yêu thích
+🎶 scan here to Listen 🎶
+![Uploading z7472663795895_0be9cae861bd84aecad04abc3108c824.jpg…]()
