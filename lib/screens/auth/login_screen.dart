@@ -180,7 +180,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// ===== EMAIL LOGIN (FIREBASE) =====
   Future<void> _login() async {
     if (emailCtrl.text.isEmpty || passCtrl.text.isEmpty) {
       _toast("Vui lòng nhập đầy đủ thông tin");
