@@ -16,7 +16,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final MusicService _musicService = MusicService();
-  bool _isLoading = true;
+
+  /// 🔑 CHỈ CHẠY SKELETON 1 LẦN DUY NHẤT
+  static bool _hasShownSkeleton = false;
+
+  bool _isLoading = false;
 
   // ================== DATA ==================
 
@@ -65,17 +69,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    });
+    /// ✅ CHỈ HIỆN SKELETON KHI VỪA LOGIN
+    if (!_hasShownSkeleton) {
+      _isLoading = true;
+      _hasShownSkeleton = true;
+
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      });
+    }
   }
 
-
+  // ================== PLAYER ==================
 
   void _playSong(Song song) async {
-
     LocalMusicStore.addRecent(song);
 
     if (_musicService.currentSong?.filePath == song.filePath) {
@@ -85,7 +94,6 @@ class _HomeScreenState extends State<HomeScreen> {
         await _musicService.resume();
       }
     } else {
-
       await _musicService.playSong(song);
     }
     setState(() {});
@@ -274,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: 4,
+          itemCount: 6,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 12,
@@ -283,12 +291,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           itemBuilder: (_, __) => _skeletonBox(height: 50),
         ),
+        const SizedBox(height: 24),
+        _skeletonBox(height: 200),
+        const SizedBox(height: 24),
+        _skeletonBox(height: 24),
+        _skeletonBox(height: 24),
+        _skeletonBox(height: 24),
       ],
     );
   }
 
   Widget _skeletonBox({double height = 20, double? width}) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       height: height,
       width: width,
       decoration: BoxDecoration(
