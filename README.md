@@ -1,16 +1,56 @@
-# music_app
+<img width="392" height="801" alt="image" src="https://github.com/user-attachments/assets/5dcc1ec0-0fa7-4b15-98f2-427f750c3022" />🎵 TAQ Music App
+🚀 Giới Thiệu
 
-Music app Flutter
+TAQ Music là ứng dụng nghe nhạc di động được phát triển nhằm mang đến trải nghiệm nghe nhạc đơn giản – mượt mà – cá nhân hóa.
+Ứng dụng cho phép người dùng khám phá, phát nhạc, quản lý danh sách yêu thích và đăng nhập tài khoản để đồng bộ dữ liệu.
 
-## Getting Started
+TAQ Music hướng tới giao diện trực quan, dễ sử dụng, phù hợp cho sinh viên và người dùng trẻ yêu thích âm nhạc.
+📌 Các Tính Năng Chính
+🎶 Nghe nhạc
 
-This project is a starting point for a Flutter application.
+Phát nhạc trực tiếp trong ứng dụng
 
-A few resources to get you started if this is your first Flutter project:
+❤️ Quản lý bài hát yêu thích
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Thêm / xoá bài hát khỏi danh sách yêu thích
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Thêm / xoá bài hát khỏi danh sách tải xuống
+
+📂 Danh sách nhạc
+
+Hiển thị danh sách bài hát
+
+Phân loại theo album / playlist (có thể mở rộng)
+
+👤 Tài khoản người dùng
+
+Đăng nhập bằng Email
+
+Đăng nhập bằng Google (Firebase Authentication)
+
+Lưu dữ liệu người dùng trên Firebase
+
+🎨 Giao diện thân thiện
+
+UI hiện đại, tối giản
+
+Trải nghiệm mượt mà trên Android
+
+🛠️ Tech Stack
+Frontend
+
+Flutter (Dart)
+
+Firebase Authentication
+
+Email / Password
+
+Google Sign-In
+
+Database
+
+Cloud Firestore / Firebase Realtime Database
+
+Lưu thông tin người dùng
+
+Lưu danh sách bài hát & yêu thích
