@@ -4,6 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../services/music_service.dart';
 import '../../models/song.dart';
 import '../../data/local_music_store.dart';
+import '../../app_state.dart'; // ✅ thêm
 import 'artist_detail_screen.dart';
 import 'profile_screen.dart';
 
@@ -17,10 +18,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final MusicService _musicService = MusicService();
 
-  /// 🔑 CHỈ CHẠY SKELETON 1 LẦN DUY NHẤT
-  static bool _hasShownSkeleton = false;
-
-  bool _isLoading = false;
+  bool _isLoading = true;
 
   // ================== DATA ==================
 
@@ -69,16 +67,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    /// ✅ CHỈ HIỆN SKELETON KHI VỪA LOGIN
-    if (!_hasShownSkeleton) {
+    // ✅ CHỈ HIỆN SKELETON KHI LOGIN MỚI
+    if (!AppState.homeLoaded) {
       _isLoading = true;
-      _hasShownSkeleton = true;
 
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() {
+            _isLoading = false;
+            AppState.homeLoaded = true; // 🔑 đánh dấu home đã load
+          });
         }
       });
+    } else {
+      _isLoading = false;
     }
   }
 

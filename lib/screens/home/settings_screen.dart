@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../user_store.dart';
+import '../../app_state.dart'; // ✅ thêm
 import '../auth/login_screen.dart';
 import 'profile_screen.dart';
 
@@ -164,6 +165,9 @@ class SettingsScreen extends StatelessWidget {
           await firebaseService.signOut();
 
           UserStore.isLoggedIn = false;
+
+          // ✅ reset skeleton cho lần login sau
+          AppState.homeLoaded = false;
 
           Navigator.pushAndRemoveUntil(
             context,
