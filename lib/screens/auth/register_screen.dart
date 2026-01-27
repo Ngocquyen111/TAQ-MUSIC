@@ -32,7 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     usernameCtrl.addListener(_onUsernameChanged);
 
-    // ✅ kiểm tra độ dài + trùng khớp
+    // kiểm tra độ dài + trùng khớp
     passCtrl.addListener(_validatePassword);
     confirmCtrl.addListener(_validatePassword);
   }
@@ -79,19 +79,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final confirm = confirmCtrl.text;
 
     setState(() {
-      // 👉 CHƯA GÕ GÌ → không hiện lỗi
       if (pass.isEmpty) {
         passwordError = null;
         return;
       }
 
-      // 👉 GÕ NHƯNG < 6 KÝ TỰ
       if (pass.length < 6) {
         passwordError = "Mật khẩu phải có ít nhất 6 ký tự";
         return;
       }
 
-      // 👉 KIỂM TRA CONFIRM
       if (confirm.isNotEmpty && pass != confirm) {
         passwordError = "Mật khẩu chưa trùng khớp";
         return;
