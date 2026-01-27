@@ -1,60 +1,55 @@
-🎵 TAQ Music App
-🚀 Giới Thiệu
+## Giới Thiệu
 
-TAQ Music là ứng dụng nghe nhạc di động được phát triển nhằm mang đến trải nghiệm nghe nhạc đơn giản – mượt mà – cá nhân hóa.
-Ứng dụng cho phép người dùng khám phá, phát nhạc, quản lý danh sách yêu thích và đăng nhập tài khoản để đồng bộ dữ liệu.
+**TAQ Music** là ứng dụng di động nghe nhạc giúp người dùng thưởng thức âm nhạc mọi lúc, mọi nơi với trải nghiệm mượt mà và thân thiện.
 
-TAQ Music hướng tới giao diện trực quan, dễ sử dụng, phù hợp cho sinh viên và người dùng trẻ yêu thích âm nhạc.
-📌 Các Tính Năng Chính
-🎶 Nghe nhạc
+Ứng dụng tích hợp các tính năng hỗ trợ:
+- Nghe nhạc trực tuyến trong ứng dụng
+- Quản lý bài hát yêu thích
+- Đăng nhập và lưu dữ liệu người dùng
+- Giao diện trực quan, dễ sử dụng
 
-Phát nhạc trực tiếp trong ứng dụng
+TAQ Music hướng tới trải nghiệm người dùng **đơn giản – nhanh chóng – hiện đại**, phù hợp với sinh viên và người yêu âm nhạc.
 
-❤️ Quản lý bài hát yêu thích
+---
 
-Thêm / xoá bài hát khỏi danh sách yêu thích
+## Các Tính Năng Chính
 
-Thêm / xoá bài hát khỏi danh sách tải xuống
 
-📂 Danh sách nhạc
+<img width="392" height="801" alt="image" src="https://github.com/user-attachments/assets/54b16130-efcc-47ab-a906-57c2d3a241f9" />
 
-Hiển thị danh sách bài hát
+<img width="395" height="787" alt="image" src="https://github.com/user-attachments/assets/66b74e28-d754-4ec3-a72b-a9469df8fdd9" />
 
-Phân loại theo album / playlist (có thể mở rộng)
+<img width="396" height="800" alt="image" src="https://github.com/user-attachments/assets/4fabac14-3e33-4e99-8f47-9c7929c8d42e" />
 
-👤 Tài khoản người dùng
 
-Đăng nhập bằng Email
+###  Nghe nhạc
+ Phát nhạc trực tiếp trong ứng dụng  
+ Hỗ trợ Play / Pause / Next / Previous  
+ Thanh tiến trình bài hát (seek bar)
 
-Đăng nhập bằng Google (Firebase Authentication)
+###  Bài hát yêu thích
+ Lưu và quản lý danh sách bài hát yêu thích  
+ Đồng bộ dữ liệu theo tài khoản người dùng
 
-Lưu dữ liệu người dùng trên Firebase
+###  Thư viện nhạc
+ Hiển thị danh sách bài hát  
+ Phân loại theo album / playlist *(có thể mở rộng)*
 
-🎨 Giao diện thân thiện
+###  Tài khoản người dùng
+ Đăng nhập bằng Email  
+ Đăng nhập bằng Google (Firebase Authentication)
 
-UI hiện đại, tối giản
+---
 
-Trải nghiệm mượt mà trên Android
+##  Tech Stack
 
-<img width="392" height="801" alt="image" src="https://github.com/user-attachments/assets/5dcc1ec0-0fa7-4b15-98f2-427f750c3022" />
+- **Frontend:** Flutter (Dart)  
+- **Backend:** Firebase  
+- **Database:** Cloud Firestore / Firebase Realtime Database  
+- **Authentication:** Email / Google Sign-In  
 
-🛠️ Tech Stack
-Frontend
+---
 
-Flutter (Dart)
+##  Hướng Dẫn Cài Đặt & Chạy Ứng Dụng
 
-Firebase Authentication
-
-Email / Password
-
-Google Sign-In
-
-Database
-
-Cloud Firestore / Firebase Realtime Database
-
-Lưu thông tin người dùng
-
-Lưu danh sách bài hát & yêu thích
-🎶 scan here to Listen 🎶
-![Uploading z7472663795895_0be9cae861bd84aecad04abc3108c824.jpg…]()
+<img width="1000" height="1000" alt="image" src="https://github.com/user-attachments/assets/a72f023d-c905-45cc-8c3c-174f2327fb62" />
