@@ -1,4 +1,4 @@
-<img width="392" height="801" alt="image" src="https://github.com/user-attachments/assets/5dcc1ec0-0fa7-4b15-98f2-427f750c3022" />🎵 TAQ Music App
+🎵 TAQ Music App
 🚀 Giới Thiệu
 
 TAQ Music là ứng dụng nghe nhạc di động được phát triển nhằm mang đến trải nghiệm nghe nhạc đơn giản – mượt mà – cá nhân hóa.
@@ -35,6 +35,7 @@ Lưu dữ liệu người dùng trên Firebase
 UI hiện đại, tối giản
 
 Trải nghiệm mượt mà trên Android
+<img width="392" height="801" alt="image" src="https://github.com/user-attachments/assets/5dcc1ec0-0fa7-4b15-98f2-427f750c3022" />
 
 🛠️ Tech Stack
 Frontend
@@ -48,6 +49,9 @@ Email / Password
 Google Sign-In
 
 Database
+🎶 scan here to Listen 🎶
+![Uploading image.png…]()
+
 
 Cloud Firestore / Firebase Realtime Database
 
