@@ -30,11 +30,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void initState() {
     super.initState();
 
-
     usernameCtrl.addListener(_onUsernameChanged);
 
-    passCtrl.addListener(_checkPasswordMatch);
-    confirmCtrl.addListener(_checkPasswordMatch);
+    // ✅ kiểm tra độ dài + trùng khớp
+    passCtrl.addListener(_validatePassword);
+    confirmCtrl.addListener(_validatePassword);
   }
 
   @override
@@ -73,16 +73,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
   }
 
-  // ================= PASSWORD =================
-  void _checkPasswordMatch() {
+  // ================= PASSWORD VALIDATE =================
+  void _validatePassword() {
+    final pass = passCtrl.text;
+    final confirm = confirmCtrl.text;
+
     setState(() {
-      if (confirmCtrl.text.isEmpty) {
+      // 👉 CHƯA GÕ GÌ → không hiện lỗi
+      if (pass.isEmpty) {
         passwordError = null;
-      } else if (passCtrl.text != confirmCtrl.text) {
-        passwordError = "Mật khẩu chưa trùng khớp";
-      } else {
-        passwordError = null;
+        return;
       }
+
+      // 👉 GÕ NHƯNG < 6 KÝ TỰ
+      if (pass.length < 6) {
+        passwordError = "Mật khẩu phải có ít nhất 6 ký tự";
+        return;
+      }
+
+      // 👉 KIỂM TRA CONFIRM
+      if (confirm.isNotEmpty && pass != confirm) {
+        passwordError = "Mật khẩu chưa trùng khớp";
+        return;
+      }
+
+      passwordError = null;
     });
   }
 
@@ -136,6 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   passCtrl,
                   "",
                   obscure: hidePassword,
+                  errorText: passwordError,
                   suffix: _eyeIcon(
                     hidePassword,
                         () => setState(() => hidePassword = !hidePassword),
@@ -202,8 +218,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     alignment: Alignment.centerLeft,
     child: Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Text(text,
-          style: const TextStyle(color: Colors.white, fontSize: 14)),
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+      ),
     ),
   );
 
@@ -241,8 +259,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             padding: const EdgeInsets.only(bottom: 10),
             child: Text(
               errorText,
-              style:
-              const TextStyle(color: Colors.redAccent, fontSize: 12),
+              style: const TextStyle(color: Colors.redAccent, fontSize: 12),
             ),
           )
         else
@@ -266,8 +283,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFFC1C1),
           foregroundColor: Colors.black,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
         onPressed: onTap,
         child: Text(text),
