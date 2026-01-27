@@ -166,7 +166,7 @@ class SettingsScreen extends StatelessWidget {
 
           UserStore.isLoggedIn = false;
 
-          // ✅ reset skeleton cho lần login sau
+          // reset skeleton cho lần login sau
           AppState.homeLoaded = false;
 
           Navigator.pushAndRemoveUntil(

@@ -65,7 +65,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
     );
   }
 
-  // ================= APP BAR (ĐÃ SỬA) =================
+  // ================= APP BAR =================
   Widget _buildAppBar() {
     return SliverAppBar(
       expandedHeight: 320,
@@ -99,7 +99,7 @@ class _ArtistDetailScreenState extends State<ArtistDetailScreen> {
               ),
             ),
 
-            // TÊN NGHỆ SĨ Ở GIỮA
+
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(

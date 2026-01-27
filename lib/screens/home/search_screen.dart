@@ -24,7 +24,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Song> _results = [];
   final List<Song> _recentSearches = [];
 
-  // ================= SEARCH (ĐÃ SỬA) =================
+  // ================= SEARCH  =================
 
   void _onSearch(String keyword) {
     keyword = keyword.trim().toLowerCase();

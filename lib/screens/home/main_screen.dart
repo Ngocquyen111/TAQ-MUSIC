@@ -20,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void _playSong(Song song) async {
     await _musicService.playSong(song);
-    setState(() {}); // rebuild để hiện MiniPlayer
+    setState(() {});
   }
 
   @override

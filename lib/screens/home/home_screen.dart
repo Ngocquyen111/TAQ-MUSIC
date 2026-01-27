@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    // ✅ CHỈ HIỆN SKELETON KHI LOGIN MỚI
+
     if (!AppState.homeLoaded) {
       _isLoading = true;
 
@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (mounted) {
           setState(() {
             _isLoading = false;
-            AppState.homeLoaded = true; // 🔑 đánh dấu home đã load
+            AppState.homeLoaded = true;
           });
         }
       });
